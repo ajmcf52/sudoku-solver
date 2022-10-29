@@ -1,4 +1,4 @@
-import src.utils as utils
+from src import utils, gui
 
 # using this for now; may use command line args in the future.
 filename = 'board.txt'
@@ -8,6 +8,9 @@ with open(filename, 'r', encoding='utf-8') as f:
         row_text = line.split(',')
         board.append([eval(i) for i in row_text])
 
-utils.solve(board)
-utils.print_board(board)
-print(utils.check_solution(board))
+# utils.solve(board)
+# utils.print_board(board)
+# print(utils.check_solution(board))
+
+gui.init(board)
+gui.run()
