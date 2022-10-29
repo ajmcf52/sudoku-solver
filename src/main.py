@@ -1,4 +1,4 @@
-import utils
+import src.utils as utils
 
 # using this for now; may use command line args in the future.
 filename = 'board.txt'
