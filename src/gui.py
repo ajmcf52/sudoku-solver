@@ -13,7 +13,7 @@ BOARD_WIDTH = TILE_COUNT * TILE_WIDTH
 BOARD_HEIGHT = BOARD_WIDTH
 WINDOW_WIDTH = BOARD_WIDTH
 WINDOW_HEIGHT = BOARD_HEIGHT + 50
-FONT_SIZE = 30
+FONT_SIZE = 40
 FONT = pygame.font.SysFont('newyork', FONT_SIZE)
 
 COLOR_BLACK = (0, 0, 0)
@@ -21,6 +21,9 @@ COLOR_RED = (255, 0, 0)
 COLOR_GREEN = (0, 255, 0)
 COLOR_GREY = (133, 136, 140)
 COLOR_WHITE = (255, 255, 255)
+
+MAIN_LINE_COLOR = (159, 162, 166)
+SELECTED_TILE_COLOR = (247, 255, 105)
 
 STANDARD_THICKNESS = 1
 SUBGRID_THICKNESS = 2
@@ -48,9 +51,10 @@ class Board:
 
         self.window = win
         self.board = board_data
-        self.tiles = [[Tile(self.board[i][j], i *
-                            TILE_HEIGHT, j * TILE_WIDTH) for j in range(TILE_COUNT)] for i in range(TILE_COUNT)]
-        self.selected_tile = (-1, -1)
+
+        self.tiles = [[Tile(self.board[i][j], j * TILE_WIDTH, i *
+                            TILE_HEIGHT) for j in range(TILE_COUNT)] for i in range(TILE_COUNT)]
+        self.selected_tile = None
 
         # pre-solve board so we can easily check attempted placements.
         self.solution = deepcopy(self.board)
@@ -68,13 +72,29 @@ class Board:
         spacing = BOARD_WIDTH / TILE_COUNT
         # draw horizontal and vertical lines first.
         for i in range(TILE_COUNT + 1):
-            line_thickness = SUBGRID_THICKNESS if i % 3 == 0 else STANDARD_THICKNESS
-            pygame.draw.line(self.window, COLOR_BLACK, (i * spacing, 0),
+            line_thickness = None
+            line_color = None
+            if i % 3 == 0:
+                line_thickness = SUBGRID_THICKNESS
+                line_color = COLOR_BLACK
+            else:
+                line_thickness = STANDARD_THICKNESS
+                line_color = MAIN_LINE_COLOR
+
+            pygame.draw.line(self.window, line_color, (i * spacing, 0),
                              (i * spacing, BOARD_WIDTH), line_thickness)
-            pygame.draw.line(self.window, COLOR_BLACK,
+            pygame.draw.line(self.window, line_color,
                              (0, i * spacing), (BOARD_HEIGHT, i * spacing), line_thickness)
 
-        # draw the tiles.
+        # draw the selected tile shading
+        if self.selected_tile != None:
+            selected_tile_pos = (
+                self.selected_tile[1] * TILE_WIDTH + 3, self.selected_tile[0] * TILE_HEIGHT + 3)
+            selected_rect = pygame.Rect(
+                selected_tile_pos[0], selected_tile_pos[1], TILE_WIDTH - 6, TILE_HEIGHT - 6)
+            pygame.draw.rect(self.window, SELECTED_TILE_COLOR, selected_rect)
+
+        # draw the tile numbers.
         for i in range(TILE_COUNT):
             for j in range(TILE_COUNT):
                 self.tiles[i][j].draw(self.window, COLOR_BLACK)
@@ -88,7 +108,7 @@ class Board:
                     self.tiles[row][j].is_selected = False
                 except TypeError as e:
                     print(e)
-        self.tiles[int(row)][int(col)].is_selected = True
+        self.tiles[row][col].is_selected = True
         self.selected_tile = (row, col)
 
     def clear_temp(self):
@@ -154,18 +174,30 @@ class Tile:
         if self.number == 0 and self.temp == None:
             return
 
+        text_pos_x = None
+        text_pos_y = None
+
         # for drawing a tile number that hasn't been submitted.
         # if self.number != 0:
         #     num_text = FONT.render(str(self.temp), True, COLOR_GREY)
         #     win.blit(num_text, (pos[0], pos[1]))
         # for drawing submitted numbers.
-        if self.number != 0:
-            num_text = FONT.render(str(self.temp), True, COLOR_BLACK)
-            win.blit(num_text, (pos[0] + (spacing / 2 -
-                                          (num_text.get_width() / 2)), (pos[1] + (spacing / 2 - (num_text.get_width() / 2)))))
+        # if self.number != 0:
+        #     num_text = FONT.render(str(self.temp), True, c)
+        #     text_pos_x = pos[0] + (spacing / 2) - (num_text.get_width() / 2)
+        #     text_pos_y = pos[1] + (spacing / 2) - (num_text.get_height() / 2)
+        #     win.blit(num_text, (pos[0] + (spacing / 2 +
+        #                                   (num_text.get_width() / 2)), (pos[1] + (spacing / 2 + (num_text.get_width() / 2)))))
 
         num_text = FONT.render(str(self.number), True, c)
-        win.blit(num_text, (self.x, self.y))
+        text_pos_x = self.x + (spacing / 2) - (num_text.get_width() / 2)
+        text_pos_y = self.y + (spacing / 2) - (num_text.get_height() / 2)
+        win.blit(num_text, (text_pos_x, text_pos_y))
+
+        # num_text = FONT.render(str(self.number), True, c)
+        # text_pos_x = pos[0] + (spacing / 2) - (num_text.get_width() / 2)
+        # text_pos_y = pos[1] + (spacing / 2) - (num_text.get_height() / 2)
+        # win.blit(num_text, (text_pos_x, text_pos_y))
 
     def is_clicked(self, mouse_pos):
         if self.shape.collidepoint(mouse_pos):
@@ -210,7 +242,7 @@ def run():
     board = Board(window, board_data)
 
     running = True
-    key_pressed = -1
+    key_pressed = None
     time_start = time.time()
     faults = 0
     pygame.display.flip()
@@ -257,10 +289,12 @@ def run():
             elif event.type == pygame.MOUSEBUTTONUP:
                 mouse_pos = pygame.mouse.get_pos()
                 board_pos = board.click_to_coord(mouse_pos)
+
+                # NOTE x and y are inverted here for 2d list indexing.
                 if board_pos != (-1, -1):
-                    board.select_tile(int(board_pos[0]), int(board_pos[1]))
+                    board.select_tile(board_pos[1], board_pos[0])
                     key_pressed = -1
-        if board.selected_tile != (-1, -1) and key_pressed != -1:
+        if board.selected_tile != None and key_pressed != None:
             board.place_temp(key_pressed)
 
         redraw(window, board, time_since_start, faults)
