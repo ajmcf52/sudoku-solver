@@ -12,6 +12,20 @@ THICK_VLINE = chr(9475)
 CHOICE_RANGE = 9
 
 
+def build_board(filename: str):
+    '''board building function. Expects a board.txt file one level above src folder.'''
+    board = []
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            for line in f:
+                row_text = line.split(',')
+                board.append([eval(i) for i in row_text])
+    except IOError:
+        print("Board file unreadable. Please ensure 'board.txt' exists in project top-level folder.")
+        return None
+    return board
+
+
 def print_board(board: list[list[int]]):
     '''prints contents of the board in a readable format.'''
 
