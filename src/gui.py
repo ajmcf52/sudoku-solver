@@ -15,8 +15,8 @@ WINDOW_WIDTH = BOARD_WIDTH
 WINDOW_HEIGHT = BOARD_HEIGHT + 50
 SUBMITTED_FONT_SIZE = 40
 TEMP_FONT_SIZE = 25
-SUBMITTED_FONT = pygame.font.SysFont('newyork', SUBMITTED_FONT_SIZE)
-TEMP_FONT = pygame.font.SysFont('newyork', TEMP_FONT_SIZE)
+SUBMITTED_FONT = pygame.font.SysFont('avenir', SUBMITTED_FONT_SIZE)
+TEMP_FONT = pygame.font.SysFont('avenir', TEMP_FONT_SIZE)
 
 COLOR_BLACK = (0, 0, 0)
 COLOR_RED = (255, 0, 0)
@@ -32,6 +32,13 @@ TEMP_NUM_COLOR = (115, 115, 111)
 STANDARD_THICKNESS = 1
 SUBGRID_THICKNESS = 2
 SELECT_THICKNESS = 4
+
+SOLVE_SPEED_DELAY_DICT = {
+    1: 100,
+    2: 50,
+    3: 10
+}
+solver_speed = None
 
 BOARD_FILENAME = 'board.txt'
 
@@ -159,6 +166,36 @@ class Board:
         row, col = self.selected_tile
         self.tiles[row][col].set_temp(num)
 
+    def speed_solve(self, timestamp: str, faults: int):
+        '''visualization of the backtracking algorithm.'''
+
+        global solver_speed
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit()
+            if event.type == pygame.KEYUP and event.key == pygame.K_f:
+                solver_speed = solver_speed % 3 + 1
+
+        time_delay = SOLVE_SPEED_DELAY_DICT[solver_speed]
+        next_spot = utils.find_next_empty(self.board)
+        self.select_tile(next_spot[0], next_spot[1])
+        if next_spot == (-1, -1):
+            return True
+        for i in range(1, 10):
+            if utils.is_valid(self.board, next_spot, i):
+                self.tiles[next_spot[0]][next_spot[1]].number = i
+                self.update_board()
+                pygame.time.delay(time_delay)
+                redraw(self.window, self, timestamp, faults)
+
+                if self.speed_solve(timestamp, faults):
+                    return True
+
+                self.tiles[next_spot[0]][next_spot[1]].number = 0
+                self.update_board()
+                pygame.time.delay(time_delay)
+                redraw(self.window, self, timestamp, faults)
+
 
 class Tile:
     '''a graphical sudoku board tile.'''
@@ -208,10 +245,6 @@ class Tile:
 
 
 def get_timestamp(elapsed: int):
-    # seconds = elapsed % 60
-    # minutes = seconds // 60
-    # hours = minutes // 60
-    # stamp = time.strftime('%H:%M:%S', elapsed)
     minutes, seconds = divmod(elapsed, 60)
     hours, minutes = divmod(minutes, 60)
     stamp = f'{hours:d}:{minutes:02d}:{seconds:02d}'
@@ -224,6 +257,15 @@ def redraw(win: pygame.Surface, board: Board, timestamp: str, faults: int):
     win.fill(COLOR_WHITE)
     time_text = SUBMITTED_FONT.render(timestamp, True, COLOR_BLACK)
     win.blit(time_text, (WINDOW_WIDTH - 140, WINDOW_HEIGHT - 45))
+
+    if solver_speed != None:
+        for i in range(solver_speed):
+            p1 = (WINDOW_WIDTH - 260 + (i * 30), WINDOW_HEIGHT - 40)
+            p2 = (WINDOW_WIDTH - 260 + (i * 30), WINDOW_HEIGHT - 10)
+            p3 = (WINDOW_WIDTH - 230 + (i * 30), WINDOW_HEIGHT - 25)
+            poly_coords = (p1, p2, p3)
+            pygame.draw.polygon(win, COLOR_BLACK, poly_coords)
+
     fault_text = None
     if faults < 11:
         fault_text = SUBMITTED_FONT.render('X ' * faults, True, COLOR_RED)
@@ -231,6 +273,7 @@ def redraw(win: pygame.Surface, board: Board, timestamp: str, faults: int):
         fault_text = SUBMITTED_FONT.render(str(faults), True, COLOR_RED)
     win.blit(fault_text, (10, WINDOW_HEIGHT - 45))
     board.draw()
+    pygame.display.flip()
 
 
 def run():
@@ -286,10 +329,14 @@ def run():
                         continue
                     board.tiles[row][col].set_temp(None)
 
-                # used to quicksolve the board.
+                # quicksolves the board with a backtracking visualization.
                 elif event.key == pygame.K_SPACE:
-                    # TODO fill this in!
-                    pass
+                    global solver_speed
+                    solver_speed = 1
+                    board.speed_solve(time_since_start, faults)
+                    pygame.time.delay(1500)
+                    running = False
+
             elif event.type == pygame.MOUSEBUTTONUP:
                 mouse_pos = pygame.mouse.get_pos()
                 board_pos = board.click_to_coord(mouse_pos)
@@ -302,7 +349,6 @@ def run():
             board.place_temp(key_pressed)
 
         redraw(window, board, time_since_start, faults)
-        pygame.display.update()
 
 
 run()
