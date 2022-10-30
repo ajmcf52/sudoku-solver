@@ -25,7 +25,8 @@ COLOR_GREY = (133, 136, 140)
 COLOR_WHITE = (255, 255, 255)
 
 MAIN_LINE_COLOR = (159, 162, 166)
-SELECTED_TILE_COLOR = (247, 255, 105)
+SELECT_OPEN_COLOR = (247, 255, 105)
+SELECT_CLOSED_COLOR = (200, 204, 201)
 TEMP_NUM_COLOR = (115, 115, 111)
 
 STANDARD_THICKNESS = 1
@@ -91,11 +92,13 @@ class Board:
 
         # draw the selected tile shading
         if self.selected_tile != None:
-            selected_tile_pos = (
-                self.selected_tile[1] * TILE_WIDTH + 3, self.selected_tile[0] * TILE_HEIGHT + 3)
-            selected_rect = pygame.Rect(
-                selected_tile_pos[0], selected_tile_pos[1], TILE_WIDTH - 6, TILE_HEIGHT - 6)
-            pygame.draw.rect(self.window, SELECTED_TILE_COLOR, selected_rect)
+            sel_x, sel_y = self.selected_tile
+            if self.tiles[sel_x][sel_y].number == 0:
+                sel_tile_pos = (
+                    sel_y * TILE_WIDTH + 3, sel_x * TILE_HEIGHT + 3)
+                selected_rect = pygame.Rect(
+                    sel_tile_pos[0], sel_tile_pos[1], TILE_WIDTH - 6, TILE_HEIGHT - 6)
+                pygame.draw.rect(self.window, SELECT_OPEN_COLOR, selected_rect)
 
         # draw the tile numbers.
         for i in range(TILE_COUNT):
@@ -180,17 +183,6 @@ class Tile:
         text_pos_x = None
         text_pos_y = None
 
-        # for drawing a tile number that hasn't been submitted.
-        # if self.number != 0:
-        #     num_text = FONT.render(str(self.temp), True, COLOR_GREY)
-        #     win.blit(num_text, (pos[0], pos[1]))
-        # for drawing submitted numbers.
-        # if self.number != 0:
-        #     num_text = FONT.render(str(self.temp), True, c)
-        #     text_pos_x = pos[0] + (spacing / 2) - (num_text.get_width() / 2)
-        #     text_pos_y = pos[1] + (spacing / 2) - (num_text.get_height() / 2)
-        #     win.blit(num_text, (pos[0] + (spacing / 2 +
-        #                                   (num_text.get_width() / 2)), (pos[1] + (spacing / 2 + (num_text.get_width() / 2)))))
         if self.number != 0:
             num_text = SUBMITTED_FONT.render(
                 str(self.number), True, COLOR_BLACK)
@@ -202,11 +194,6 @@ class Tile:
             text_pos_y = self.y + 5
 
         win.blit(num_text, (text_pos_x, text_pos_y))
-
-        # num_text = FONT.render(str(self.number), True, c)
-        # text_pos_x = pos[0] + (spacing / 2) - (num_text.get_width() / 2)
-        # text_pos_y = pos[1] + (spacing / 2) - (num_text.get_height() / 2)
-        # win.blit(num_text, (text_pos_x, text_pos_y))
 
     def is_clicked(self, mouse_pos):
         if self.shape.collidepoint(mouse_pos):
@@ -220,21 +207,29 @@ class Tile:
         self.number = n
 
 
-def get_timestamp(elapsed: float):
-    seconds = elapsed % 60
-    minutes = seconds // 60
-    hours = minutes // 60
-    stamp = time.strftime('%H:%M:%S', time.localtime())
+def get_timestamp(elapsed: int):
+    # seconds = elapsed % 60
+    # minutes = seconds // 60
+    # hours = minutes // 60
+    # stamp = time.strftime('%H:%M:%S', elapsed)
+    minutes, seconds = divmod(elapsed, 60)
+    hours, minutes = divmod(minutes, 60)
+    stamp = f'{hours:d}:{minutes:02d}:{seconds:02d}'
     return stamp
 
 
 def redraw(win: pygame.Surface, board: Board, timestamp: str, faults: int):
     '''main drawing method.'''
+
     win.fill(COLOR_WHITE)
     time_text = SUBMITTED_FONT.render(timestamp, True, COLOR_BLACK)
-    win.blit(time_text, (WINDOW_WIDTH - 150, WINDOW_HEIGHT - 5))
-    fault_text = SUBMITTED_FONT.render('X ' * faults, True, COLOR_RED)
-    win.blit(fault_text, (10, WINDOW_HEIGHT - 10))
+    win.blit(time_text, (WINDOW_WIDTH - 140, WINDOW_HEIGHT - 45))
+    fault_text = None
+    if faults < 11:
+        fault_text = SUBMITTED_FONT.render('X ' * faults, True, COLOR_RED)
+    else:
+        fault_text = SUBMITTED_FONT.render(str(faults), True, COLOR_RED)
+    win.blit(fault_text, (10, WINDOW_HEIGHT - 45))
     board.draw()
 
 
@@ -271,12 +266,12 @@ def run():
                     row, col = board.selected_tile
 
                     # if no temp value has been entered, disregard.
-                    if board.tiles[row][col].temp == 0:
+                    if board.tiles[row][col].temp == None:
                         continue
                     attempt = board.tiles[row][col].temp
                     is_good_placement = board.attempt_placement(attempt)
                     if is_good_placement:
-                        print("Good.")
+                        print("Good one!")
                     else:
                         print("Bad placement.")
                         faults += 1
