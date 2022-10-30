@@ -13,8 +13,10 @@ BOARD_WIDTH = TILE_COUNT * TILE_WIDTH
 BOARD_HEIGHT = BOARD_WIDTH
 WINDOW_WIDTH = BOARD_WIDTH
 WINDOW_HEIGHT = BOARD_HEIGHT + 50
-FONT_SIZE = 40
-FONT = pygame.font.SysFont('newyork', FONT_SIZE)
+SUBMITTED_FONT_SIZE = 40
+TEMP_FONT_SIZE = 25
+SUBMITTED_FONT = pygame.font.SysFont('newyork', SUBMITTED_FONT_SIZE)
+TEMP_FONT = pygame.font.SysFont('newyork', TEMP_FONT_SIZE)
 
 COLOR_BLACK = (0, 0, 0)
 COLOR_RED = (255, 0, 0)
@@ -24,6 +26,7 @@ COLOR_WHITE = (255, 255, 255)
 
 MAIN_LINE_COLOR = (159, 162, 166)
 SELECTED_TILE_COLOR = (247, 255, 105)
+TEMP_NUM_COLOR = (115, 115, 111)
 
 STANDARD_THICKNESS = 1
 SUBGRID_THICKNESS = 2
@@ -97,7 +100,7 @@ class Board:
         # draw the tile numbers.
         for i in range(TILE_COUNT):
             for j in range(TILE_COUNT):
-                self.tiles[i][j].draw(self.window, COLOR_BLACK)
+                self.tiles[i][j].draw(self.window)
 
     def select_tile(self, row: int, col: int):
         '''selects a tile denoted by row and column.'''
@@ -116,7 +119,7 @@ class Board:
 
         r, c = self.selected_tile
         if self.tiles[r][c].number == 0:
-            self.tiles[r][c].set_temp(0)
+            self.tiles[r][c].set_temp(None)
 
     def click_to_coord(self, pos: tuple[int]):
         '''translates a given mouse click position to a board coordinate.'''
@@ -141,7 +144,7 @@ class Board:
         self.update_board()
         if self.board[row][col] != self.solution[row][col]:
             self.tiles[row][col].set_number(0)
-            self.tiles[row][col].set_temp(0)
+            self.tiles[row][col].set_temp(None)
             self.update_board()
             return False
         else:
@@ -165,13 +168,13 @@ class Tile:
         self.shape = pygame.Rect(x, y, TILE_WIDTH, TILE_HEIGHT)
         self.is_selected = False
 
-    def draw(self, win: pygame.Surface, c: tuple[int]):
+    def draw(self, win: pygame.Surface):
         '''draws tile numbers.'''
 
         spacing = BOARD_HEIGHT / TILE_COUNT
         pos = (spacing * self.x, spacing * self.y)
 
-        if self.number == 0 and self.temp == None:
+        if self.temp == 0 or (self.number == 0 and self.temp == None):
             return
 
         text_pos_x = None
@@ -188,10 +191,16 @@ class Tile:
         #     text_pos_y = pos[1] + (spacing / 2) - (num_text.get_height() / 2)
         #     win.blit(num_text, (pos[0] + (spacing / 2 +
         #                                   (num_text.get_width() / 2)), (pos[1] + (spacing / 2 + (num_text.get_width() / 2)))))
+        if self.number != 0:
+            num_text = SUBMITTED_FONT.render(
+                str(self.number), True, COLOR_BLACK)
+            text_pos_x = self.x + (spacing / 2) - (num_text.get_width() / 2)
+            text_pos_y = self.y + (spacing / 2) - (num_text.get_height() / 2)
+        else:
+            num_text = TEMP_FONT.render(str(self.temp), True, TEMP_NUM_COLOR)
+            text_pos_x = self.x + 5
+            text_pos_y = self.y + 5
 
-        num_text = FONT.render(str(self.number), True, c)
-        text_pos_x = self.x + (spacing / 2) - (num_text.get_width() / 2)
-        text_pos_y = self.y + (spacing / 2) - (num_text.get_height() / 2)
         win.blit(num_text, (text_pos_x, text_pos_y))
 
         # num_text = FONT.render(str(self.number), True, c)
@@ -222,9 +231,9 @@ def get_timestamp(elapsed: float):
 def redraw(win: pygame.Surface, board: Board, timestamp: str, faults: int):
     '''main drawing method.'''
     win.fill(COLOR_WHITE)
-    time_text = FONT.render(timestamp, True, COLOR_BLACK)
+    time_text = SUBMITTED_FONT.render(timestamp, True, COLOR_BLACK)
     win.blit(time_text, (WINDOW_WIDTH - 150, WINDOW_HEIGHT - 5))
-    fault_text = FONT.render('X ' * faults, True, COLOR_RED)
+    fault_text = SUBMITTED_FONT.render('X ' * faults, True, COLOR_RED)
     win.blit(fault_text, (10, WINDOW_HEIGHT - 10))
     board.draw()
 
@@ -271,8 +280,8 @@ def run():
                     else:
                         print("Bad placement.")
                         faults += 1
-                    key_pressed = -1
-                    if utils.find_next_empty(board) == (-1, -1):
+                    key_pressed = None
+                    if utils.find_next_empty(board.board) == (-1, -1):
                         print("Game over, you won!")
                         running = False
                 # used for removing a temp entry from a selected tile.
@@ -280,7 +289,7 @@ def run():
                     row, col = board.selected_tile
                     if (row, col) == (-1, -1) or board.tiles[row][col].number != 0 or board.tiles[row][col].temp == 0:
                         continue
-                    board.tiles[row][col].set_temp(0)
+                    board.tiles[row][col].set_temp(None)
 
                 # used to quicksolve the board.
                 elif event.key == pygame.K_SPACE:
@@ -293,7 +302,7 @@ def run():
                 # NOTE x and y are inverted here for 2d list indexing.
                 if board_pos != (-1, -1):
                     board.select_tile(board_pos[1], board_pos[0])
-                    key_pressed = -1
+                    key_pressed = None
         if board.selected_tile != None and key_pressed != None:
             board.place_temp(key_pressed)
 
