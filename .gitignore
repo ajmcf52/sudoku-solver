@@ -1,0 +1,17 @@
+# virtual environment
+venv/
+.venv/
+
+# python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# local env files
+.env
+
+# operating system files
+.DS_Store
+Thumbs.db
