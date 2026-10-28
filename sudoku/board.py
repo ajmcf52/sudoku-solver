@@ -6,6 +6,12 @@ def can_place(board: list[list[int]], row: int, col: int, digit: int) -> bool:
     We assume the board, row/col coordinates, and digit are all valid.
     """
 
+    if row < 0 or row > 8 or col < 0 or col > 8:
+        return False
+    if digit > 9 or digit < 1 or board[row][col] != 0:
+        return False
+    
+
     box_row = row - (row % 3)
     box_col = col - (col % 3)
 
