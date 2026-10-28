@@ -6,12 +6,6 @@ def can_place(board: list[list[int]], row: int, col: int, digit: int) -> bool:
     We assume the board, row/col coordinates, and digit are all valid.
     """
 
-    if row < 0 or row > 8 or col < 0 or col > 8:
-        return False
-    if digit > 9 or digit < 1 or board[row][col] != 0:
-        return False
-    
-
     box_row = row - (row % 3)
     box_col = col - (col % 3)
 
@@ -29,3 +23,20 @@ def can_place(board: list[list[int]], row: int, col: int, digit: int) -> bool:
             return False
 
     return True
+
+
+
+def find_empty(board: list[list[int]]) -> tuple[int, int] | None:
+    """
+    finds and returns the first empty cell that can be found
+    while searching the board, row by row.
+
+    we assume our board is a valid 9x9 square grid.
+    """
+
+    for i in range(len(board)):
+        for j in range(len(board)):
+            if board[i][j] == 0:
+                return (i, j)
+    
+    return None
