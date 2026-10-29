@@ -1,6 +1,9 @@
-from sudoku.board import can_place, find_empty
+from sudoku.board import can_place, find_empty, is_valid
 
-
+def solve(board: list[list[int]]) -> bool:
+    if not is_valid(board):
+        return False
+    return solve_backtracking(board)
 
 def solve_backtracking(board: list[list[int]]) -> bool:
     """
