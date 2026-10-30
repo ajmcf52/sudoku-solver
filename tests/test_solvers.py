@@ -1,4 +1,5 @@
 from sudoku.solvers import solve_backtracking
+from sudoku.metrics import SearchMetrics
 
 solved_board = [[2,1,4,6,9,7,8,3,5],
                 [9,7,8,3,5,4,2,1,6],
@@ -24,7 +25,7 @@ def test_solved_board():
 
     copied_board = [row[:] for row in solved_board]
 
-    assert solve_backtracking(copied_board) is True
+    assert solve_backtracking(copied_board, SearchMetrics(), 0) is True
     assert copied_board == solved_board
 
 
@@ -39,7 +40,7 @@ def test_solvable_med_puzzle():
                       [0,0,7,0,0,6,0,4,0],
                       [0,0,1,0,0,0,0,6,8]]
 
-    assert solve_backtracking(solvable_medium) is True
+    assert solve_backtracking(solvable_medium, SearchMetrics(), 0) is True
     assert solvable_medium == solved_board
 
 
@@ -55,5 +56,5 @@ def test_valid_unsolvable():
 
     copied_unsolvable = [row[:] for row in unsolvable_board]
 
-    assert solve_backtracking(unsolvable_board) is False
+    assert solve_backtracking(unsolvable_board, SearchMetrics(), 0) is False
     assert copied_unsolvable == unsolvable_board
