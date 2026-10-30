@@ -26,7 +26,8 @@ def test_one_empty_cell():
 
     assert is_complete
     assert metrics.solver_calls == 2 and metrics.backtracks == 0 \
-    and metrics.max_depth == 1 and metrics.placements == 1
+    and metrics.max_depth == 1 and metrics.placements == 1 \
+    and metrics.elapsed_sec > 0
 
 
 def test_unsolvable():
@@ -42,7 +43,8 @@ def test_unsolvable():
 
     assert not completion
     assert (metrics.placements == 1 and metrics.backtracks == 1
-            and metrics.max_depth == 1 and metrics.solver_calls == 2)
+            and metrics.max_depth == 1 and metrics.solver_calls == 2
+            and metrics.elapsed_sec > 0)
 
 
 def test_invalid_board():
@@ -61,7 +63,8 @@ def test_invalid_board():
 
     assert not completion
     assert (metrics.solver_calls == 0 and metrics.max_depth == 0 
-            and metrics.backtracks == 0 and metrics.placements == 0)
+            and metrics.backtracks == 0 and metrics.placements == 0
+            and metrics.elapsed_sec == 0.0)
 
 
 def test_already_solved():
@@ -70,4 +73,5 @@ def test_already_solved():
 
     assert completion
     assert (metrics.solver_calls == 1 and metrics.max_depth == 0 
-            and metrics.backtracks == 0 and metrics.placements == 0)
+            and metrics.backtracks == 0 and metrics.placements == 0
+            and metrics.elapsed_sec > 0)

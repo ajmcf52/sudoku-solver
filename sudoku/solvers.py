@@ -1,13 +1,18 @@
 from sudoku.board import can_place, find_empty, is_valid
 from sudoku.metrics import SearchMetrics
+from time import perf_counter
 
 def solve(board: list[list[int]]) -> tuple[bool,SearchMetrics]:
     
     metrics = SearchMetrics()
     if not is_valid(board):
         return (False,metrics)
-    
+
+    start = perf_counter()
     finished = solve_backtracking(board, metrics, 0)
+    elapsed = perf_counter() - start
+    metrics.elapsed_sec = elapsed
+
     return (finished,metrics)
 
 def solve_backtracking(board: list[list[int]], metrics: SearchMetrics, depth: int) -> bool:
