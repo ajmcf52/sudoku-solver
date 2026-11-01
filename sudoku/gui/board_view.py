@@ -1,26 +1,90 @@
 from tkinter import *
-import tkinter.font
 from sudoku.solvers import solve
 from sudoku.puzzle_library import PuzzleLibrary, Puzzle
 
 class SudokuApp:
-    def __init__(self, root, puzzle: Puzzle):
+    def __init__(self, root: Tk, puzzle: Puzzle):
         self.puzzle = puzzle
+        self.display_board = [row[:] for row in self.puzzle.board]
         self.root = root
         self.events = []
         self.event_index = 0
         self.canvas = Canvas(root, width=465,height=465)
         self.canvas.pack()
+
         draw_board(self.canvas)
         self.id_grid = draw_initial_numbers(self.canvas, self.puzzle)
         self.setup_buttons(root)
+        self.playback_state = "Unrecorded"
+        self.step_id = None
+
+    def check_solution(self) -> bool:
+        """
+        compare self.display_board with
+        self.puzzle.solution and return
+        whether it was properly solved.
+        """
+        for i in range(len(self.display_board)):
+            for j in range(len(self.display_board[i])):
+                if self.display_board[i][j] != self.puzzle.solution[i][j]:
+                    return False
+        return True
+
+    def reset_playback(self):
+        """
+        reset playback of the 
+        sudoku solver--actual
+        events are kept the same,
+        we are just playing them
+        over again.
+        """
+        if self.playback_state not in ("Playing", "Paused", "Finished"):
+            return
+        
+        if self.step_id is not None:
+            self.root.after_cancel(self.step_id)
+            self.step_id = None
+            
+        self.event_index = 0
+        self.display_board = [row[:] for row in self.puzzle.board]
+        self.reset_display_numbers()
+        self.playback_state = "Ready"
+
+    def reset_display_numbers(self):
+        """
+        return grid back to initial puzzle state.
+        different from initializing the board state,
+        as the cells have already been assigned item
+        IDs.
+        """
+        for i in range(len(self.display_board)):
+            for j in range(len(self.display_board[i])):
+                if self.display_board[i][j] == 0:
+                    cell_text = ""
+                else:
+                    cell_text = self.display_board[i][j]
+                self.canvas.itemconfigure(self.id_grid[i][j], text=cell_text)
 
     def handle_record(self):
+        if self.playback_state != "Unrecorded":
+            return
         self.events = record_solution(self.puzzle.board)
+        self.playback_state = "Ready"
 
     def start_playback(self):
+        if self.playback_state != "Ready" and self.playback_state != "Paused":
+            return
+        self.playback_state = "Playing"
         self.step()
 
+    def pause_playback(self):
+        if self.playback_state != "Playing":
+            return
+        
+        self.playback_state = "Paused"
+        if self.step_id is not None:
+            self.root.after_cancel(self.step_id)
+            self.step_id = None
     def setup_buttons(self, root: Tk):
 
         controls = Frame(root)
@@ -32,18 +96,38 @@ class SudokuApp:
         record_button = Button(controls, text="Record", command=self.handle_record)
         record_button.pack(pady=10, side=LEFT, padx=10)
 
+        pause_button = Button(controls, text="Pause", command=self.pause_playback)
+        pause_button.pack(pady=10, side=LEFT)
+
+        reset_button = Button(controls, text="Reset", command=self.reset_playback)
+        reset_button.pack(pady=10, side=LEFT, padx=10)
+
     def step(self):
+        if self.playback_state != "Playing":
+            return
+        self.step_id = None
+
         if self.event_index >= len(self.events):
+            # all events processed; check solution.
+            solved = self.check_solution()
+            if solved:
+                print("puzzle solved correctly")
+            else:
+                print("puzzle does not match solution")
+            self.playback_state = "Finished"
+
             return
         event_i = self.events[self.event_index]
         event_type,row,col,digit = event_i
         
         if (event_type == "place"):
             self.canvas.itemconfigure(self.id_grid[row][col], text=digit)
+            self.display_board[row][col] = digit
         else:
             self.canvas.itemconfigure(self.id_grid[row][col], text="")
+            self.display_board[row][col] = 0
         self.event_index += 1
-        self.root.after(20, self.step)
+        self.step_id = self.root.after(20, self.step)
 
 # solvable_medium = [[2,0,0,6,0,0,0,3,0],
 #                       [0,7,0,0,0,4,0,0,6],
