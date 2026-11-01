@@ -1,20 +1,22 @@
 from tkinter import *
 import tkinter.font
 from sudoku.solvers import solve
+from sudoku.puzzle_library import PuzzleLibrary, Puzzle
 
 class SudokuApp:
-    def __init__(self, root):
+    def __init__(self, root, puzzle: Puzzle):
+        self.puzzle = puzzle
         self.root = root
         self.events = []
         self.event_index = 0
         self.canvas = Canvas(root, width=465,height=465)
         self.canvas.pack()
         draw_board(self.canvas)
-        self.id_grid = draw_initial_numbers(self.canvas)
+        self.id_grid = draw_initial_numbers(self.canvas, self.puzzle)
         self.setup_buttons(root)
 
     def handle_record(self):
-        self.events = record_solution(solvable_medium)
+        self.events = record_solution(self.puzzle.board)
 
     def start_playback(self):
         self.step()
@@ -43,15 +45,15 @@ class SudokuApp:
         self.event_index += 1
         self.root.after(20, self.step)
 
-solvable_medium = [[2,0,0,6,0,0,0,3,0],
-                      [0,7,0,0,0,4,0,0,6],
-                      [0,0,0,0,1,8,4,0,0],
-                      [6,0,0,1,0,0,0,0,0],
-                      [0,0,9,0,3,5,0,0,0],
-                      [0,0,0,0,0,0,9,5,0],
-                      [0,3,0,8,0,0,7,0,0],
-                      [0,0,7,0,0,6,0,4,0],
-                      [0,0,1,0,0,0,0,6,8]]
+# solvable_medium = [[2,0,0,6,0,0,0,3,0],
+#                       [0,7,0,0,0,4,0,0,6],
+#                       [0,0,0,0,1,8,4,0,0],
+#                       [6,0,0,1,0,0,0,0,0],
+#                       [0,0,9,0,3,5,0,0,0],
+#                       [0,0,0,0,0,0,9,5,0],
+#                       [0,3,0,8,0,0,7,0,0],
+#                       [0,0,7,0,0,6,0,4,0],
+#                       [0,0,1,0,0,0,0,6,8]]
 
 tile_offset = (450 - 15) / 9 # px width of each tile
 
@@ -73,7 +75,7 @@ def record_solution(board: list[list[int]]) -> list:
     
     return events
 
-def draw_initial_numbers(canvas: Canvas) -> list[list[int]]:
+def draw_initial_numbers(canvas: Canvas, puzzle: Puzzle) -> list[list[int]]:
     """
     return a 9x9 grid of text IDs for each
     number that is drawn, so the text can
@@ -84,8 +86,8 @@ def draw_initial_numbers(canvas: Canvas) -> list[list[int]]:
         id_grid.append([])
         for j in range(0,9):
             
-            if solvable_medium[i][j] != 0:
-                cell_text = solvable_medium[i][j]
+            if puzzle.board[i][j] != 0:
+                cell_text = puzzle.board[i][j]
             else:
                 cell_text = ""
             text_id = canvas.create_text(15 + (j + 0.5) * tile_offset, 15 + (i + 0.5) * tile_offset,
@@ -120,7 +122,9 @@ def main():
 
     root = Tk()
     root.title("Sudoku Solver")
-    app = SudokuApp(root)
+    puzzle_library = PuzzleLibrary()
+    puzzle_library.load_puzzle_library()
+    app = SudokuApp(root, puzzle_library.puzzles[0])
     root.mainloop()
 
 
