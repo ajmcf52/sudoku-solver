@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import ttk
 from sudoku.solvers import solve
 from sudoku.puzzle_library import PuzzleLibrary, Puzzle
 from typing import NamedTuple
@@ -18,20 +19,24 @@ speed_selections = [SpeedPreset("Study", 500, 1),
 
 
 class SudokuApp:
-    def __init__(self, root: Tk, puzzle: Puzzle):
+    def __init__(self, root: Tk, puzzle: Puzzle, library: PuzzleLibrary):
         self.playback_speed_index = 0
         self.playback_speed = speed_selections[self.playback_speed_index]
+        self.puzzle_library = library
         self.puzzle = puzzle
         self.display_board = [row[:] for row in self.puzzle.board]
         self.root = root
         self.events = []
         self.event_index = 0
-        self.canvas = Canvas(root, width=465,height=465)
+
+        self.setup_dropdowns()
+
+        self.canvas = Canvas(self.root, width=465,height=465)
         self.canvas.pack()
 
         draw_board(self.canvas)
         self.id_grid = draw_initial_numbers(self.canvas, self.puzzle)
-        self.setup_buttons(root)
+        self.setup_buttons()
         self.playback_state = "Unrecorded"
         self.step_id = None
 
@@ -47,6 +52,27 @@ class SudokuApp:
                     return False
         return True
 
+    def load_configuration(self):
+        """
+        loads a selected puzzle and solver
+        into the FOV, restarting the app's
+        solver logic and UI while doing so.
+        """
+
+        puzzle_index = self.puzzle_dropdown.current()
+        if puzzle_index != -1:
+            self.puzzle = self.puzzle_library.puzzles[puzzle_index]
+
+        if self.step_id is not None:
+            self.root.after_cancel(self.step_id)
+            self.step_id = None
+        self.event_index = 0
+        self.events.clear()
+
+        self.playback_state = "Unrecorded"
+        self.display_board = [row[:] for row in self.puzzle.board]
+        self.reset_display_numbers()
+
     def toggle_speed_change(self):
         """
         button handler for changing
@@ -55,6 +81,7 @@ class SudokuApp:
         self.playback_speed_index = (self.playback_speed_index + 1) % len(speed_selections)
         self.playback_speed = speed_selections[self.playback_speed_index]
         self.speed_button.configure(text=f"Speed: {self.playback_speed.name}")
+    
     def reset_playback(self):
         """
         reset playback of the 
@@ -82,6 +109,7 @@ class SudokuApp:
         as the cells have already been assigned item
         IDs.
         """
+        
         for i in range(len(self.display_board)):
             for j in range(len(self.display_board[i])):
                 if self.display_board[i][j] == 0:
@@ -110,9 +138,45 @@ class SudokuApp:
         if self.step_id is not None:
             self.root.after_cancel(self.step_id)
             self.step_id = None
-    def setup_buttons(self, root: Tk):
 
-        controls = Frame(root)
+    def setup_dropdowns(self):
+        """
+        dropdown menu setup.
+        controls for puzzle 
+        and solver selection.
+        """
+
+        dropdowns = Frame(self.root)
+        dropdowns.pack(pady=10)
+
+        puzzle_names = []
+        easy_count = 0
+        medium_count = 0
+        hard_count = 0
+
+        for puzzle in self.puzzle_library.puzzles:
+            if puzzle.difficulty == "Easy":
+                easy_count += 1
+                puzzle_names.append(puzzle.difficulty + " " +  str(easy_count))
+            elif puzzle.difficulty == "Medium":
+                medium_count += 1
+                puzzle_names.append(puzzle.difficulty + " " + str(medium_count))
+            else:
+                hard_count += 1
+                puzzle_names.append(puzzle.difficulty + " " + str(hard_count))
+
+        self.puzzle_dropdown = ttk.Combobox(dropdowns, state="readonly", values=puzzle_names)
+        self.puzzle_dropdown.pack(pady=10, side=LEFT)
+        self.puzzle_dropdown.current(0) # set puzzle dropdown to match current selection
+
+        # solver_dropdown = ttk.Combobox(dropdowns, state="readonly", values=)
+
+    def setup_buttons(self):
+        """
+        control interface setup.
+        """
+
+        controls = Frame(self.root)
         controls.pack(pady=10)
 
         play_button = Button(controls, text="Start", command=self.start_playback)
@@ -129,6 +193,9 @@ class SudokuApp:
 
         self.speed_button = Button(controls, text=f"Speed: {self.playback_speed.name}", command=self.toggle_speed_change)
         self.speed_button.pack(pady=10, side=LEFT)
+
+        load_button = Button(controls, text="Load", command=self.load_configuration)
+        load_button.pack(padx=10, pady=10, side=LEFT)
 
     def step(self):
         self.step_id = None
@@ -161,16 +228,6 @@ class SudokuApp:
         # end for-loop
 
         self.step_id = self.root.after(self.playback_speed.delay_ms, self.step)
-
-# solvable_medium = [[2,0,0,6,0,0,0,3,0],
-#                       [0,7,0,0,0,4,0,0,6],
-#                       [0,0,0,0,1,8,4,0,0],
-#                       [6,0,0,1,0,0,0,0,0],
-#                       [0,0,9,0,3,5,0,0,0],
-#                       [0,0,0,0,0,0,9,5,0],
-#                       [0,3,0,8,0,0,7,0,0],
-#                       [0,0,7,0,0,6,0,4,0],
-#                       [0,0,1,0,0,0,0,6,8]]
 
 tile_offset = (450 - 15) / 9 # px width of each tile
 
@@ -241,7 +298,7 @@ def main():
     root.title("Sudoku Solver")
     puzzle_library = PuzzleLibrary()
     puzzle_library.load_puzzle_library()
-    app = SudokuApp(root, puzzle_library.puzzles[0])
+    app = SudokuApp(root, puzzle_library.puzzles[0],puzzle_library)
     root.mainloop()
 
 
