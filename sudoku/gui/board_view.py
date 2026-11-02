@@ -1,9 +1,26 @@
 from tkinter import *
 from sudoku.solvers import solve
 from sudoku.puzzle_library import PuzzleLibrary, Puzzle
+from typing import NamedTuple
+
+
+class SpeedPreset(NamedTuple):
+    name: str
+    delay_ms: int
+    events_per_tick: int
+
+
+speed_selections = [SpeedPreset("Study", 500, 1),
+                    SpeedPreset("Slow", 200, 1),
+                    SpeedPreset("Normal", 50, 1),
+                    SpeedPreset("Fast", 20, 1),
+                    SpeedPreset("Fast-forward", 20, 10)]
+
 
 class SudokuApp:
     def __init__(self, root: Tk, puzzle: Puzzle):
+        self.playback_speed_index = 0
+        self.playback_speed = speed_selections[self.playback_speed_index]
         self.puzzle = puzzle
         self.display_board = [row[:] for row in self.puzzle.board]
         self.root = root
@@ -30,6 +47,14 @@ class SudokuApp:
                     return False
         return True
 
+    def toggle_speed_change(self):
+        """
+        button handler for changing
+        playback speed.
+        """
+        self.playback_speed_index = (self.playback_speed_index + 1) % len(speed_selections)
+        self.playback_speed = speed_selections[self.playback_speed_index]
+        self.speed_button.configure(text=f"Speed: {self.playback_speed.name}")
     def reset_playback(self):
         """
         reset playback of the 
@@ -44,7 +69,7 @@ class SudokuApp:
         if self.step_id is not None:
             self.root.after_cancel(self.step_id)
             self.step_id = None
-            
+
         self.event_index = 0
         self.display_board = [row[:] for row in self.puzzle.board]
         self.reset_display_numbers()
@@ -102,32 +127,40 @@ class SudokuApp:
         reset_button = Button(controls, text="Reset", command=self.reset_playback)
         reset_button.pack(pady=10, side=LEFT, padx=10)
 
+        self.speed_button = Button(controls, text=f"Speed: {self.playback_speed.name}", command=self.toggle_speed_change)
+        self.speed_button.pack(pady=10, side=LEFT)
+
     def step(self):
-        if self.playback_state != "Playing":
-            return
         self.step_id = None
 
-        if self.event_index >= len(self.events):
-            # all events processed; check solution.
-            solved = self.check_solution()
-            if solved:
-                print("puzzle solved correctly")
-            else:
-                print("puzzle does not match solution")
-            self.playback_state = "Finished"
+        for i in range(self.playback_speed.events_per_tick):
 
-            return
-        event_i = self.events[self.event_index]
-        event_type,row,col,digit = event_i
+            if self.playback_state != "Playing":
+                return
+
+            if self.event_index >= len(self.events):
+                # all events processed; check solution.
+                solved = self.check_solution()
+                if solved:
+                    print("puzzle solved correctly")
+                else:
+                    print("puzzle does not match solution")
+                self.playback_state = "Finished"
+                return
+            
+            event_i = self.events[self.event_index]
+            event_type,row,col,digit = event_i
         
-        if (event_type == "place"):
-            self.canvas.itemconfigure(self.id_grid[row][col], text=digit)
-            self.display_board[row][col] = digit
-        else:
-            self.canvas.itemconfigure(self.id_grid[row][col], text="")
-            self.display_board[row][col] = 0
-        self.event_index += 1
-        self.step_id = self.root.after(20, self.step)
+            if (event_type == "place"):
+                self.canvas.itemconfigure(self.id_grid[row][col], text=digit)
+                self.display_board[row][col] = digit
+            else:
+                self.canvas.itemconfigure(self.id_grid[row][col], text="")
+                self.display_board[row][col] = 0
+            self.event_index += 1
+        # end for-loop
+
+        self.step_id = self.root.after(self.playback_speed.delay_ms, self.step)
 
 # solvable_medium = [[2,0,0,6,0,0,0,3,0],
 #                       [0,7,0,0,0,4,0,0,6],
