@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import ttk
-from sudoku.solvers import solve
+from sudoku.solvers import solve, solve_mrv, solve_backtracking
 from sudoku.puzzle_library import PuzzleLibrary, Puzzle
 from typing import NamedTuple
 
@@ -17,6 +17,11 @@ speed_selections = [SpeedPreset("Study", 500, 1),
                     SpeedPreset("Fast", 20, 1),
                     SpeedPreset("Fast-forward", 20, 10)]
 
+solver_options = {
+    "Basic Backtracking" : solve_backtracking,
+    "MRV Backtracking" : solve_mrv
+}
+
 
 class SudokuApp:
     def __init__(self, root: Tk, puzzle: Puzzle, library: PuzzleLibrary):
@@ -28,6 +33,7 @@ class SudokuApp:
         self.root = root
         self.events = []
         self.event_index = 0
+        self.solver = solve_backtracking
 
         self.setup_dropdowns()
 
@@ -62,6 +68,9 @@ class SudokuApp:
         puzzle_index = self.puzzle_dropdown.current()
         if puzzle_index != -1:
             self.puzzle = self.puzzle_library.puzzles[puzzle_index]
+        solver_index = self.solver_dropdown.current()
+        if solver_index != -1:
+            self.solver = solver_options[self.solver_dropdown.get()]
 
         if self.step_id is not None:
             self.root.after_cancel(self.step_id)
@@ -121,7 +130,7 @@ class SudokuApp:
     def handle_record(self):
         if self.playback_state != "Unrecorded":
             return
-        self.events = record_solution(self.puzzle.board)
+        self.events = record_solution(self.puzzle.board,self.solver)
         self.playback_state = "Ready"
 
     def start_playback(self):
@@ -169,7 +178,9 @@ class SudokuApp:
         self.puzzle_dropdown.pack(pady=10, side=LEFT)
         self.puzzle_dropdown.current(0) # set puzzle dropdown to match current selection
 
-        # solver_dropdown = ttk.Combobox(dropdowns, state="readonly", values=)
+        self.solver_dropdown = ttk.Combobox(dropdowns, state="readonly", values=list(solver_options))
+        self.solver_dropdown.pack(pady=10,padx=10,side=LEFT)
+        self.solver_dropdown.current(0)
 
     def setup_buttons(self):
         """
@@ -232,7 +243,7 @@ class SudokuApp:
 tile_offset = (450 - 15) / 9 # px width of each tile
 
 
-def record_solution(board: list[list[int]]) -> list:
+def record_solution(board: list[list[int]],solver=solve_backtracking) -> list:
     """
     runs the actual solver algorithm. This will be
     solved at full-speed, whereas the playback will
@@ -245,7 +256,7 @@ def record_solution(board: list[list[int]]) -> list:
         events.append(("place",row,col,digit))
     def on_removal(row,col):
         events.append(("remove",row,col,0))
-    solve(cells, on_placement, on_removal)
+    solve(cells, on_placement, on_removal,solver)
     
     return events
 

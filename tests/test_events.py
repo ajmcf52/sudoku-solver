@@ -1,4 +1,4 @@
-from sudoku.solvers import solve
+from sudoku.solvers import solve, solve_mrv
 
 one_empty = [[2,1,4,6,9,7,8,3,5],
                 [9,7,8,3,5,4,2,1,6],
@@ -27,11 +27,11 @@ def test_one_empty():
         events.append((row,col,digit,"place"))
     def on_removal(row, col):
         events.append((row,col,"remove"))
-    solve(one_empty, on_placement,on_removal)
+
+    one_empty_copy = [row[:] for row in one_empty]
+    solve(one_empty_copy, on_placement,on_removal)
     assert len(events) == 1
     assert events[0] == (5,4,6,"place")
-
-
 
 def test_unsolvable():
     events = []
@@ -51,3 +51,31 @@ def test_unsolvable():
     assert len(events) == 2
     assert events[0] == (0,1,4,"place") 
     assert events[1] == (0,1,"remove")
+
+def test_mrv_one_empty():
+    events = []
+    def on_placement(row,col,digit):
+        events.append((row,col,digit,"place"))
+    def on_removal(row,col):
+        events.append((row,col,"remove"))
+    one_empty_copy = [row[:] for row in one_empty]
+    solve(one_empty_copy,on_placement,on_removal,solver=solve_mrv)
+    assert len(events) == 1
+    assert events[0] == (5,4,6,"place")
+
+def test_mrv_unsolvable():
+    events = []
+    def on_placement(row,col,digit):
+        events.append((row,col,digit,"place"))
+    def on_removal(row,col):
+        events.append((row,col,"remove"))
+    unsolvable_board = [row[:] for row in solved_board]
+    unsolvable_board[0][0] = 1
+    unsolvable_board[0][1] = 0
+    unsolvable_board[0][2] = 0
+    unsolvable_board[4][0] = 0
+    unsolvable_board[4][1] = 0
+
+    solve(unsolvable_board,on_placement,on_removal,solver=solve_mrv)
+
+    assert len(events) == 0
