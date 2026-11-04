@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+from sudoku.metrics import SearchMetrics
 from sudoku.solvers import solve, solve_mrv, solve_backtracking
 from sudoku.puzzle_library import PuzzleLibrary, Puzzle
 from typing import NamedTuple
@@ -34,7 +35,7 @@ class SudokuApp:
         self.events = []
         self.event_index = 0
         self.solver = solve_backtracking
-
+        self.metrics = None
         self.setup_dropdowns()
 
         self.canvas = Canvas(self.root, width=465,height=465)
@@ -45,6 +46,43 @@ class SudokuApp:
         self.setup_buttons()
         self.playback_state = "Unrecorded"
         self.step_id = None
+
+    def benchmark_compare(self):
+        """
+        compares runtime stats
+        of two different solvers.
+
+        At this early stage, we are
+        hardcoding which solvers that
+        are being used. A more persistent
+        version will support UI config
+        for selecting solvers to compare.
+        """
+
+        for solver_name, solver in solver_options.items():
+            board_copy = [row[:] for row in self.puzzle.board]
+            solved, metrics = solve(board_copy,None,None,solver)
+            self.display_metrics(solver_name,metrics)
+
+    def display_metrics(self, solver_name: str = None, metrics: SearchMetrics = None):
+        """
+        prints recorded metrics of a given
+        solver to the console once playback
+        has finished.
+        """
+        if solver_name is None:
+            metrics_msg = f"\t{self.solver_name}\n"
+        else:
+            metrics_msg = f"\t{solver_name}\n"
+        if metrics is None:
+            metrics = self.metrics
+        metrics_msg += f"time (s): \t{metrics.elapsed_sec}\n"
+        metrics_msg += f"solver calls: \t{metrics.solver_calls}\n"
+        metrics_msg += f"placements: \t{metrics.placements}\n"
+        metrics_msg += f"backtracks: \t{metrics.backtracks}\n"
+        metrics_msg += f"max_depth: \t{metrics.max_depth}\n"
+
+        print(metrics_msg)
 
     def check_solution(self) -> bool:
         """
@@ -70,7 +108,8 @@ class SudokuApp:
             self.puzzle = self.puzzle_library.puzzles[puzzle_index]
         solver_index = self.solver_dropdown.current()
         if solver_index != -1:
-            self.solver = solver_options[self.solver_dropdown.get()]
+            self.solver_name = self.solver_dropdown.get()
+            self.solver = solver_options[self.solver_name]
 
         if self.step_id is not None:
             self.root.after_cancel(self.step_id)
@@ -130,7 +169,7 @@ class SudokuApp:
     def handle_record(self):
         if self.playback_state != "Unrecorded":
             return
-        self.events = record_solution(self.puzzle.board,self.solver)
+        self.events = self.record_solution()
         self.playback_state = "Ready"
 
     def start_playback(self):
@@ -208,6 +247,9 @@ class SudokuApp:
         load_button = Button(controls, text="Load", command=self.load_configuration)
         load_button.pack(padx=10, pady=10, side=LEFT)
 
+        benchmark_button = Button(controls, text="Benchmark", command=self.benchmark_compare)
+        benchmark_button.pack(pady=10,side=LEFT)
+
     def step(self):
         self.step_id = None
 
@@ -221,6 +263,7 @@ class SudokuApp:
                 solved = self.check_solution()
                 if solved:
                     print("puzzle solved correctly")
+                    self.display_metrics()
                 else:
                     print("puzzle does not match solution")
                 self.playback_state = "Finished"
@@ -240,25 +283,26 @@ class SudokuApp:
 
         self.step_id = self.root.after(self.playback_speed.delay_ms, self.step)
 
+    def record_solution(self) -> list:
+        """
+        runs the actual solver algorithm. This will be
+        solved at full-speed, whereas the playback will
+        show solver events at 4-5 events/second.
+        """
+
+        cells = [row[:] for row in self.puzzle.board]
+        events = []
+        def on_placement(row, col, digit):
+            events.append(("place",row,col,digit))
+        def on_removal(row,col):
+            events.append(("remove",row,col,0))
+        solved, metrics = solve(cells, on_placement, on_removal,self.solver)
+
+        self.metrics = metrics
+        
+        return events
+
 tile_offset = (450 - 15) / 9 # px width of each tile
-
-
-def record_solution(board: list[list[int]],solver=solve_backtracking) -> list:
-    """
-    runs the actual solver algorithm. This will be
-    solved at full-speed, whereas the playback will
-    show solver events at 4-5 events/second.
-    """
-
-    cells = [row[:] for row in board]
-    events = []
-    def on_placement(row, col, digit):
-        events.append(("place",row,col,digit))
-    def on_removal(row,col):
-        events.append(("remove",row,col,0))
-    solve(cells, on_placement, on_removal,solver)
-    
-    return events
 
 def draw_initial_numbers(canvas: Canvas, puzzle: Puzzle) -> list[list[int]]:
     """
