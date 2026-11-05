@@ -4,7 +4,7 @@ from sudoku.metrics import SearchMetrics
 from sudoku.solvers import solve, solve_mrv, solve_backtracking
 from sudoku.puzzle_library import PuzzleLibrary, Puzzle
 from typing import NamedTuple
-
+from statistics import median
 
 class SpeedPreset(NamedTuple):
     name: str
@@ -35,6 +35,7 @@ class SudokuApp:
         self.events = []
         self.event_index = 0
         self.solver = solve_backtracking
+        self.solver_name = "Basic Backtracking"
         self.metrics = None
         self.setup_dropdowns()
 
@@ -47,7 +48,7 @@ class SudokuApp:
         self.playback_state = "Unrecorded"
         self.step_id = None
 
-    def benchmark_compare(self):
+    def benchmark_compare(self, rep_count:int = 1):
         """
         compares runtime stats
         of two different solvers.
@@ -59,37 +60,73 @@ class SudokuApp:
         for selecting solvers to compare.
         """
 
-        for solver_name, solver in solver_options.items():
-            board_copy = [row[:] for row in self.puzzle.board]
-            solved, metrics = solve(board_copy,None,None,solver)
-            self.display_metrics(solver_name,metrics)
+        reps_text = self.benchmark_reps.get()
+        if reps_text != "":
+            rep_count = int(reps_text)
 
-    def display_metrics(self, solver_name: str = None, metrics: SearchMetrics = None):
+        for puzzle in self.puzzle_library.puzzles:
+
+            for solver_name, solver in solver_options.items():
+                """
+                metric counts should be deterministic;
+                so for reps, we only track alotted time.
+                """
+                reps = 0
+                times = []
+                valid_metrics = True
+                while True:
+                    board_copy = [row[:] for row in puzzle.board]
+                    solved, metrics = solve(board_copy,None,None,solver)
+
+                    # verify each solution; display metrics before final break.
+                    if not solved or not verify_benchmark_single(board_copy, puzzle.solution):
+                        print(f"\nsolver {solver_name} failed for {puzzle.name} on Rep {reps}.")
+                        valid_metrics = False
+                    times.append(metrics.elapsed_sec)
+                    reps += 1
+                    if reps == rep_count:
+                        metrics.puzzle_name = puzzle.name
+                        metrics.elapsed_sec = median(times)
+                        self.display_metrics(solver_name,metrics, valid_metrics)
+                        break
+                        
+
+    def display_metrics(self, solver_name: str = None, metrics: SearchMetrics = None, valid_metrics:bool = True):
         """
         prints recorded metrics of a given
         solver to the console once playback
         has finished.
         """
+        puzzle_name = ""
         if solver_name is None:
             metrics_msg = f"\t{self.solver_name}\n"
         else:
             metrics_msg = f"\t{solver_name}\n"
         if metrics is None:
             metrics = self.metrics
-        metrics_msg += f"time (s): \t{metrics.elapsed_sec}\n"
-        metrics_msg += f"solver calls: \t{metrics.solver_calls}\n"
-        metrics_msg += f"placements: \t{metrics.placements}\n"
-        metrics_msg += f"backtracks: \t{metrics.backtracks}\n"
-        metrics_msg += f"max_depth: \t{metrics.max_depth}\n"
+            puzzle_name = self.puzzle.name
+        else:
+            puzzle_name = metrics.puzzle_name
+        
+        metrics_msg += f"puzzle name: \t{puzzle_name}\n"
+        if not valid_metrics:
+            metrics_msg += f"\tInvalid metrics object. Solver failed.\n"
+        else:
+            metrics_msg += f"time (s): \t{metrics.elapsed_sec}\n"
+            metrics_msg += f"solver calls: \t{metrics.solver_calls}\n"
+            metrics_msg += f"placements: \t{metrics.placements}\n"
+            metrics_msg += f"backtracks: \t{metrics.backtracks}\n"
+            metrics_msg += f"max_depth: \t{metrics.max_depth}\n"
 
         print(metrics_msg)
 
-    def check_solution(self) -> bool:
+    def check_display_solution(self) -> bool:
         """
         compare self.display_board with
         self.puzzle.solution and return
         whether it was properly solved.
         """
+        
         for i in range(len(self.display_board)):
             for j in range(len(self.display_board[i])):
                 if self.display_board[i][j] != self.puzzle.solution[i][j]:
@@ -247,8 +284,15 @@ class SudokuApp:
         load_button = Button(controls, text="Load", command=self.load_configuration)
         load_button.pack(padx=10, pady=10, side=LEFT)
 
-        benchmark_button = Button(controls, text="Benchmark", command=self.benchmark_compare)
+        benchmark_controls = Frame(controls)
+        benchmark_controls.pack(pady=10)
+
+        reg = benchmark_controls.register(validate_positive_int)
+
+        benchmark_button = Button(benchmark_controls, text="Benchmark", command=self.benchmark_compare)
         benchmark_button.pack(pady=10,side=LEFT)
+        self.benchmark_reps = Entry(benchmark_controls,validate="key",validatecommand=(reg,"%P"))
+        self.benchmark_reps.pack(pady=10,side=LEFT)
 
     def step(self):
         self.step_id = None
@@ -260,7 +304,7 @@ class SudokuApp:
 
             if self.event_index >= len(self.events):
                 # all events processed; check solution.
-                solved = self.check_solution()
+                solved = self.check_display_solution()
                 if solved:
                     print("puzzle solved correctly")
                     self.display_metrics()
@@ -301,6 +345,29 @@ class SudokuApp:
         self.metrics = metrics
         
         return events
+
+def validate_positive_int(char:str) -> bool:
+    """
+    validation function for text input
+    into the reps text field
+    """
+    if (char.isdigit() and int(char) > 0) or char == "":
+        return True
+    else:
+        return False
+
+def verify_benchmark_single(board: list[list[int]], solution: list[list[int]]) -> bool:
+    """
+    validates a given board against its solution.
+    returns true if they match, false otherwise.
+    """
+
+    for i in range(len(board)):
+        for j in range(len(board[i])):
+            if board[i][j] != solution[i][j]:
+                return False
+    return True
+    
 
 tile_offset = (450 - 15) / 9 # px width of each tile
 

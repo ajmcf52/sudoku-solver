@@ -6,6 +6,7 @@ class Puzzle:
         self.board = []
         self.solution = []
         self.difficulty = ""
+        self.name = ""
 
 class PuzzleLibrary:
     def __init__(self):
@@ -16,7 +17,7 @@ class PuzzleLibrary:
         self.load_puzzles("./data/medium.txt","Medium")
         # yet to add any hard/expert puzzles.
 
-    def load_puzzle(self,puzzle_string: str,solution_string: str,difficulty: str) -> Puzzle:
+    def load_puzzle(self,puzzle_string: str,solution_string: str,difficulty: str,index:int) -> Puzzle:
         """
         load a single puzzle, given the puzzle
         and solution representative strings from
@@ -28,7 +29,7 @@ class PuzzleLibrary:
         """
         puzzle = Puzzle()
         puzzle.difficulty = difficulty
-
+        puzzle.name = f"{difficulty} {index}"
         # forming puzzle
         for puzzle_row in puzzle_string.split():
             grid_row = []
@@ -54,6 +55,8 @@ class PuzzleLibrary:
         """
 
         with open(filepath, encoding="utf-8") as file:
+
+            puzzle_index = 1
             while True:    
                 puzzle_string = file.readline()
                 if puzzle_string == "":
@@ -62,7 +65,7 @@ class PuzzleLibrary:
                 if solution_string == "":
                     raise ValueError(f"solution not provided for puzzle ({filepath})")
 
-                puzzle = self.load_puzzle(puzzle_string,solution_string,difficulty)
+                puzzle = self.load_puzzle(puzzle_string,solution_string,difficulty,puzzle_index)
                 # validating new puzzle
                 if not is_valid(puzzle.board):
                     raise ValueError(f"malformed puzzle board ({filepath})")
@@ -78,7 +81,7 @@ class PuzzleLibrary:
                             raise ValueError(f"inconsistency between board and solution ({filepath})")
 
                 self.puzzles.append(puzzle)
-            
+                puzzle_index += 1
                 
 
             

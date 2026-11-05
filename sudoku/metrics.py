@@ -13,3 +13,5 @@ class SearchMetrics:
         self.backtracks = 0 # number of times the function removes a placement
         self.max_depth = 0 # recursive call depth
         self.elapsed_sec = 0.0 # time
+        self.puzzle_name = ""
+        self.valid = False
