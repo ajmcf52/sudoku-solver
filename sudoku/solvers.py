@@ -1,5 +1,5 @@
 from sudoku.board import can_place, find_empty, is_valid
-from sudoku.metrics import SearchMetrics
+from sudoku.metrics.metrics import SearchMetrics
 from time import perf_counter
 from collections.abc import Callable
 

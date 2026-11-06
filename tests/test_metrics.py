@@ -1,4 +1,4 @@
-from sudoku.metrics import SearchMetrics
+from sudoku.metrics.metrics import SearchMetrics
 from sudoku.solvers import solve
 
 solved_board = [[2,1,4,6,9,7,8,3,5],

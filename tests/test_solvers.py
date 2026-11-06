@@ -1,5 +1,5 @@
 from sudoku.solvers import solve_backtracking, find_mrv, solve_mrv
-from sudoku.metrics import SearchMetrics
+from sudoku.metrics.metrics import SearchMetrics
 
 solved_board = [[2,1,4,6,9,7,8,3,5],
                 [9,7,8,3,5,4,2,1,6],
