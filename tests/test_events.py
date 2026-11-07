@@ -121,5 +121,3 @@ def test_mrv_med_ONE_unsolved():
             board_copy[event[1]][event[2]] = event[3]
     
     assert board_copy==board_solution
-
-# from solver: makes 31 backtracks.

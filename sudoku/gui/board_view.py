@@ -5,6 +5,7 @@ from sudoku.solvers import solve, solve_mrv, solve_backtracking
 from sudoku.puzzle_library import PuzzleLibrary, Puzzle
 from sudoku.metrics.benchmark import run_benchmark
 from sudoku.config import speed_selections, solver_options
+from sudoku.gui.results_view import ResultsView
 
 class SudokuApp:
     def __init__(self, root: Tk, puzzle: Puzzle, library: PuzzleLibrary):
@@ -51,7 +52,10 @@ class SudokuApp:
         print(f"REP COUNT={rep_count}")
         for r in results:
             display_metrics(r.solver_name, r.data, r.is_valid)
-            
+
+        # open a new ResultsView and pass in the data.
+        results_view = ResultsView(self.root,results)
+    
 
     def display_metrics(self):
         """
