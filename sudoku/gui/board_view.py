@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 from sudoku.metrics.metrics import SearchMetrics
-from sudoku.solvers import solve, solve_mrv, solve_backtracking
+from sudoku.solvers import solve, solve_mrv, solve_backtracking, solve_hidden_single
 from sudoku.puzzle_library import PuzzleLibrary, Puzzle
 from sudoku.metrics.benchmark import run_benchmark
 from sudoku.config import speed_selections, solver_options
@@ -112,6 +112,7 @@ class SudokuApp:
         button handler for changing
         playback speed.
         """
+
         self.playback_speed_index = (self.playback_speed_index + 1) % len(speed_selections)
         self.playback_speed = speed_selections[self.playback_speed_index]
         self.speed_button.configure(text=f"Speed: {self.playback_speed.name}")
@@ -124,6 +125,7 @@ class SudokuApp:
         we are just playing them
         over again.
         """
+
         if self.playback_state not in ("Playing", "Paused", "Finished"):
             return
         
@@ -153,6 +155,13 @@ class SudokuApp:
                 self.canvas.itemconfigure(self.id_grid[i][j], text=cell_text)
 
     def handle_record(self):
+        """
+        handles "Record" button presses,
+        passing the action along to a
+        function that returns the playback
+        events.
+        """
+
         if self.playback_state != "Unrecorded":
             return
         self.events = self.record_solution()

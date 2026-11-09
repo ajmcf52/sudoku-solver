@@ -1,4 +1,4 @@
-from sudoku.solvers import solve, solve_mrv
+from sudoku.solvers import solve, solve_mrv, solve_hidden_single
 
 one_empty = [[2,1,4,6,9,7,8,3,5],
                 [9,7,8,3,5,4,2,1,6],
@@ -121,3 +121,46 @@ def test_mrv_med_ONE_unsolved():
             board_copy[event[1]][event[2]] = event[3]
     
     assert board_copy==board_solution
+
+
+def test_hidden_single_actual():
+
+    board = [[1,0,0,0,0,0,7,8,9],
+             [4,0,0,7,8,0,1,2,3],
+             [7,0,0,0,0,3,0,0,0],
+             [2,0,0,5,0,7,8,0,1],
+             [5,0,0,8,9,0,0,3,0],
+             [8,9,1,0,0,0,0,6,7],
+             [3,0,0,6,7,8,0,0,0],
+             [6,0,0,0,1,0,3,0,0],
+             [9,1,2,3,0,0,6,7,8]]
+
+    solution = [[1,2,3,4,5,6,7,8,9],
+                [4,5,6,7,8,9,1,2,3],
+                [7,8,9,1,2,3,4,5,6],
+                [2,3,4,5,6,7,8,9,1],
+                [5,6,7,8,9,1,2,3,4],
+                [8,9,1,2,3,4,5,6,7],
+                [3,4,5,6,7,8,9,1,2],
+                [6,7,8,9,1,2,3,4,5],
+                [9,1,2,3,4,5,6,7,8]]
+
+    events = []
+    board_copy = [row[:] for row in board]
+    def on_placement(row,col,digit):
+        events.append(("place",row,col,digit))
+    def on_removal(row,col):
+        events.append(("remove",row,col))
+
+    solved,metrics = solve(board_copy,on_placement,on_removal,
+                           solver=solve_hidden_single)
+    assert events[0] == ("place",2,3,1)
+    assert solved and solution == board_copy
+
+    for event in events:
+        if event[0] == "place":
+            board[event[1]][event[2]] = event[3]
+        else:
+            board[event[1]][event[2]] = 0
+
+    assert solution == board

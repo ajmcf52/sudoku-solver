@@ -1,4 +1,4 @@
-from sudoku.solvers import solve_backtracking, solve_mrv
+from sudoku.solvers import solve_backtracking, solve_mrv, solve_hidden_single
 from typing import NamedTuple
 
 class SpeedPreset(NamedTuple):
@@ -15,5 +15,6 @@ speed_selections = [SpeedPreset("Study", 500, 1),
 
 solver_options = {
     "Basic Backtracking" : solve_backtracking,
-    "MRV Backtracking" : solve_mrv
+    "MRV Backtracking" : solve_mrv,
+    "'Hidden Single' MRV": solve_hidden_single
 }

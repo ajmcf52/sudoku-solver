@@ -15,7 +15,7 @@ class PuzzleLibrary:
     def load_puzzle_library(self):
         self.load_puzzles("./data/easy.txt","Easy")
         self.load_puzzles("./data/medium.txt","Medium")
-        # yet to add any hard/expert puzzles.
+        self.load_puzzles("./data/expert.txt","Expert")
 
     def load_puzzle(self,puzzle_string: str,solution_string: str,difficulty: str,index:int) -> Puzzle:
         """

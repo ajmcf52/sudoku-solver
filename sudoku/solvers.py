@@ -62,7 +62,7 @@ def init_search_units(rows: dict, cols: dict, boxes: dict):
             cols[i][k] = (0,None)
             boxes[i][k] = (0,None)
 
-def solve_mrv_hidden_c(board: list[list[int]], metrics: SearchMetrics, depth: int, on_placement: Callable[[int,int,int],None] | None = None,
+def solve_hidden_single(board: list[list[int]], metrics: SearchMetrics, depth: int, on_placement: Callable[[int,int,int],None] | None = None,
                     on_removal: Callable[[int,int],None] | None = None) -> bool:
     """
     MRV solver with single hidden constraint attached.
@@ -131,7 +131,7 @@ def solve_mrv_hidden_c(board: list[list[int]], metrics: SearchMetrics, depth: in
         metrics.placements += 1
         if on_placement is not None:
             on_placement(i,j,to_place[0])
-        if solve_mrv_hidden_c(board,metrics,depth+1,on_placement,on_removal):
+        if solve_hidden_single(board,metrics,depth+1,on_placement,on_removal):
             return True
         board[i][j] = 0
         metrics.backtracks += 1
@@ -151,7 +151,7 @@ def solve_mrv_hidden_c(board: list[list[int]], metrics: SearchMetrics, depth: in
             metrics.placements += 1
             if on_placement is not None:
                 on_placement(row,col,digit)
-            if solve_mrv_hidden_c(board,metrics,depth+1,on_placement,on_removal):
+            if solve_hidden_single(board,metrics,depth+1,on_placement,on_removal):
                 return True
             board[row][col] = 0
             metrics.backtracks += 1
