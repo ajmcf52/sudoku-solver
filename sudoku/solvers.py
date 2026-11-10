@@ -2,6 +2,7 @@ from sudoku.board import can_place, find_empty, is_valid
 from sudoku.metrics.metrics import SearchMetrics
 from time import perf_counter
 from collections.abc import Callable
+import random
 
 def digit_search_box(board: list[list[int]], box: int, digit: int) -> bool:
     """
@@ -161,7 +162,28 @@ def solve_hidden_single(board: list[list[int]], metrics: SearchMetrics, depth: i
     # if either branch gets here, we backtrack.
     return False
                     
+def solve_random_mrv(board: list[list[int]], metrics: SearchMetrics, depth: int, on_placement: Callable[[int,int,int], None] | None = None,
+                     on_removal: Callable[[int,int], None] | None = None) -> bool:
+    """
+    MRV backtracking solver that attempts to place digits in a randomized order.
+    Used specifically for puzzle solution generation.
+    """
 
+    mrv_cell = find_mrv(board)
+    if mrv_cell is None:
+        return True
+
+    row,col,digits = mrv_cell
+    if len(digits) == 0:
+        return False
+    random.shuffle(digits)
+
+    for digit in digits:
+        board[row][col] = digit
+        if solve_random_mrv(board,metrics,depth+1,on_placement,on_removal):
+            return True
+        board[row][col] = 0
+    return False
     
 def solve_mrv(board: list[list[int]], metrics: SearchMetrics, depth: int, on_placement: Callable[[int,int,int], None] | None = None,
               on_removal: Callable[[int,int], None] | None = None) -> bool:

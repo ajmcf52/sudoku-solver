@@ -43,6 +43,10 @@ def find_empty(board: list[list[int]]) -> tuple[int, int] | None:
 
 
 def is_valid(board: list[list[int]]) -> bool:
+    '''
+    validates a current board state. returns
+    False if invalid, True otherwise.
+    '''
 
     if len(board) != 9:
         return False
