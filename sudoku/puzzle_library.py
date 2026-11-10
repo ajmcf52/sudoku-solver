@@ -7,6 +7,7 @@ class Puzzle:
         self.board = []
         self.solution = []
         self.difficulty = ""
+        self.batch_index = -1
         self.name = ""
 
 class PuzzleLibrary:
@@ -31,6 +32,8 @@ class PuzzleLibrary:
         puzzle = Puzzle()
         puzzle.difficulty = difficulty
         puzzle.name = f"{difficulty}_{index}"
+        puzzle.batch_index = int(index.split('_')[0])
+
         # forming puzzle
         for puzzle_row in puzzle_string.split():
             grid_row = []
@@ -54,7 +57,7 @@ class PuzzleLibrary:
         represented by 3 lines instead of 2,
         the 1st line being a puzzle tag ID.
         """
-        
+
         with open(filepath, encoding='utf-8') as file:
             while True:
                 tag_id = file.readline()

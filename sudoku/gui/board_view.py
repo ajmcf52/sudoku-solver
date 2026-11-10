@@ -1,9 +1,9 @@
 from tkinter import *
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from sudoku.metrics.metrics import SearchMetrics
 from sudoku.solvers import solve, solve_mrv, solve_backtracking, solve_hidden_single
 from sudoku.puzzle_library import PuzzleLibrary, Puzzle
-from sudoku.metrics.benchmark import run_benchmark
+from sudoku.metrics.benchmark import run_benchmark, process_summary_statistics, save_benchmark_data
 from sudoku.config import speed_selections, solver_options
 from sudoku.gui.results_view import ResultsView
 
@@ -49,14 +49,21 @@ class SudokuApp:
             rep_count = max(int(reps_text),1)
 
         results = run_benchmark(self.generated_library,rep_count)
+        summary_stats = process_summary_statistics(results)
 
         print(f"REP COUNT={rep_count}")
         for r in results:
             display_metrics(r.solver_name, r.data, r.is_valid)
 
         # open a new ResultsView and pass in the data.
-        results_view = ResultsView(self.root,results)
-    
+        results_view = ResultsView(self.root,results,summary_stats)
+
+        save_data = messagebox.askyesno(title="Save Benchmark",
+                                          message="Save benchmark data (data/results/)")
+        if save_data:
+            save_benchmark_data(results, summary_stats, 
+                                self.generated_library.puzzles[0].batch_index,
+                                rep_count)
 
     def display_metrics(self):
         """
@@ -402,7 +409,7 @@ def main():
     samples_library = PuzzleLibrary()
     samples_library.load_puzzle_library()
     generated_library = PuzzleLibrary()
-    generated_library.load_generated_puzzles("./data/generated/gen_batch_0.txt")
+    generated_library.load_generated_puzzles("./data/generated/gen_batch_1.txt")
     app = SudokuApp(root, samples_library.puzzles[0],samples_library,generated_library)
     root.mainloop()
 

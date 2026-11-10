@@ -33,7 +33,9 @@ def check_unique(board:list[list[int]], solutions: int) -> int:
 
 def generate_board() -> tuple[list[list[int]], list[list[int]], int]:
     """
-    method for generating a new puzzle board
+    method for generating a new puzzle board.
+    first 2d list is the puzzle, 2nd is the solution,
+    while the final int is the clue count.
     """
     
     board = [[0] * 9 for _ in range(9)]
@@ -88,6 +90,8 @@ def generate_puzzle_batch(batch_size: int):
     /generated.
     """
 
+    five_percent = batch_size * 0.05
+
     # determine our filename
     generated_folder = Path("./data/generated")
     matches = generated_folder.glob("gen_batch_*.txt")
@@ -101,6 +105,7 @@ def generate_puzzle_batch(batch_size: int):
     with open(file_path, mode='w', encoding='utf-8') as file:
 
         i = 0
+        percentage_unit = 1
         while i < batch_size:
             board, solution, clue_count = generate_board()
             puzzle_tag = f'{highest_index + 1}_{i}_cc{clue_count}_sudoku'
@@ -110,6 +115,11 @@ def generate_puzzle_batch(batch_size: int):
             file.write(board_str + '\n')
             file.write(solution_str + '\n')
             i += 1
+
+            if i >= five_percent * percentage_unit:
+                percent_complete = 5 * percentage_unit
+                print(f"Puzzle Gen ({percent_complete}% complete)")
+                percentage_unit += 1
 
 def main():
     parser = argparse.ArgumentParser()
