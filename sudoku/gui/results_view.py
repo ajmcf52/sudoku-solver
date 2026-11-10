@@ -1,6 +1,8 @@
 from tkinter.ttk import Treeview
-from tkinter import Toplevel, Tk
+from tkinter import Toplevel, Tk, Frame, Label
+from statistics import mean, median
 from sudoku.metrics.benchmark import BenchmarkResult
+from sudoku.config import solver_options
 
 METRICS_LABELS = ["Solver name",
                   "Puzzle name",
@@ -12,7 +14,7 @@ METRICS_LABELS = ["Solver name",
                   "Solver calls"
                   ]
 COL_WIDTHS = [120,
-              85,
+              120,
               90,
               115,
               75,
@@ -23,6 +25,9 @@ COL_WIDTHS = [120,
 class ResultsView:
     def __init__(self, root: Tk, results: list[BenchmarkResult]):
         self.data = results
+        self.summary_stats = None
+        self.process_summary_statistics()
+
         self.row_count = len(self.data)
         self.col_count = len(METRICS_LABELS)
         self.root = root
@@ -32,6 +37,25 @@ class ResultsView:
 
         self.draw_window()
         self.draw_table()
+        self.draw_benchmark_summary()
+
+    def process_summary_statistics(self):
+        """
+        parse data results to get mean/median
+        statistics for solving time on each solver.
+        """
+
+        summary_buckets = {}
+
+        for solver_name, solver_fn in solver_options.items():
+            summary_buckets[solver_name] = []
+        for result in self.data:
+            summary_buckets[result.solver_name].append(result.data.elapsed_sec)
+
+        self.summary_stats = {}
+        for solver_name, time_data in summary_buckets.items():
+            self.summary_stats[solver_name] = (mean(time_data), median(time_data))
+
 
     def draw_window(self):
         """
@@ -46,6 +70,7 @@ class ResultsView:
         insert text for each heading
         according to assigned ID.
         """
+        
         i = 0
         for id_text in self.col_labels:
             self.tree.heading(id_text,text=id_text)
@@ -61,7 +86,7 @@ class ResultsView:
 
         self.tree = Treeview(self.top_level,columns=self.col_labels,
                              show='headings')
-        self.tree.grid()
+        self.tree.pack()
         self.setup_headings()
 
         for row in self.data:
@@ -82,3 +107,34 @@ class ResultsView:
             col_values.append(d.max_depth)
             col_values.append(d.solver_calls)
             self.tree.insert('','end',values=col_values)
+
+    def draw_benchmark_summary(self):
+        """
+        displays a data summary of
+        average and median runtimes
+        between solvers.
+        """
+        self.summary_panel = Frame(self.top_level)
+        self.summary_panel.pack(pady=15,anchor='s')
+
+        average_title_label = Label(self.summary_panel,text='Average (ms)')
+        average_title_label.grid(column=0,row=1,padx=15,pady=10)
+        median_title_label = Label(self.summary_panel,text='Median (ms)')
+        median_title_label.grid(column=0,row=2,padx=15,pady=10)
+
+        solver_index = 1
+        for solver_name, solver_fn in solver_options.items():
+            solver_name_label = Label(self.summary_panel, text=solver_name)
+            solver_name_label.grid(column=solver_index,row=0,padx=10,pady=10)
+
+            ss = self.summary_stats
+            average_stat_text = "{:.2f}".format(ss[solver_name][0] * 1000)
+            average_stat_label = Label(self.summary_panel,text=average_stat_text)
+            average_stat_label.grid(row=1,column=solver_index,padx=10,pady=10)
+
+            median_stat_text = "{:.2f}".format(ss[solver_name][1] * 1000)
+            median_stat_label = Label(self.summary_panel,text=median_stat_text)
+            median_stat_label.grid(row=2,column=solver_index,padx=10,pady=10)
+            
+            solver_index += 1
+        

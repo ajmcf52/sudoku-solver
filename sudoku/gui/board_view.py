@@ -8,10 +8,11 @@ from sudoku.config import speed_selections, solver_options
 from sudoku.gui.results_view import ResultsView
 
 class SudokuApp:
-    def __init__(self, root: Tk, puzzle: Puzzle, library: PuzzleLibrary):
+    def __init__(self, root: Tk, puzzle: Puzzle, samples: PuzzleLibrary, generated: PuzzleLibrary):
         self.playback_speed_index = 0
         self.playback_speed = speed_selections[self.playback_speed_index]
-        self.puzzle_library = library
+        self.samples_library = samples
+        self.generated_library = generated
         self.puzzle = puzzle
         self.display_board = [row[:] for row in self.puzzle.board]
         self.root = root
@@ -47,7 +48,7 @@ class SudokuApp:
         if reps_text != "":
             rep_count = max(int(reps_text),1)
 
-        results = run_benchmark(self.puzzle_library,rep_count)
+        results = run_benchmark(self.generated_library,rep_count)
 
         print(f"REP COUNT={rep_count}")
         for r in results:
@@ -91,7 +92,7 @@ class SudokuApp:
 
         puzzle_index = self.puzzle_dropdown.current()
         if puzzle_index != -1:
-            self.puzzle = self.puzzle_library.puzzles[puzzle_index]
+            self.puzzle = self.samples_library.puzzles[puzzle_index]
         solver_index = self.solver_dropdown.current()
         if solver_index != -1:
             self.solver_name = self.solver_dropdown.get()
@@ -207,7 +208,7 @@ class SudokuApp:
         medium_count = 0
         hard_count = 0
 
-        for puzzle in self.puzzle_library.puzzles:
+        for puzzle in self.samples_library.puzzles:
             if puzzle.difficulty == "Easy":
                 easy_count += 1
                 puzzle_names.append(puzzle.difficulty + " " +  str(easy_count))
@@ -398,9 +399,11 @@ def main():
 
     root = Tk()
     root.title("Sudoku Solver")
-    puzzle_library = PuzzleLibrary()
-    puzzle_library.load_puzzle_library()
-    app = SudokuApp(root, puzzle_library.puzzles[0],puzzle_library)
+    samples_library = PuzzleLibrary()
+    samples_library.load_puzzle_library()
+    generated_library = PuzzleLibrary()
+    generated_library.load_generated_puzzles("./data/generated/gen_batch_0.txt")
+    app = SudokuApp(root, samples_library.puzzles[0],samples_library,generated_library)
     root.mainloop()
 
 
