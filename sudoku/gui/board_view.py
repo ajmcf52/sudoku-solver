@@ -1,5 +1,9 @@
 from tkinter import *
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, Toplevel, Scrollbar, Listbox
+from pathlib import Path
+import queue
+import threading
+import time
 from sudoku.metrics.metrics import SearchMetrics
 from sudoku.solvers import solve, solve_mrv, solve_backtracking, solve_hidden_single
 from sudoku.puzzle_library import PuzzleLibrary, Puzzle
@@ -13,6 +17,7 @@ class SudokuApp:
         self.playback_speed = speed_selections[self.playback_speed_index]
         self.samples_library = samples
         self.generated_library = generated
+        self.benchmark_queue = queue.Queue()
         self.puzzle = puzzle
         self.display_board = [row[:] for row in self.puzzle.board]
         self.root = root
@@ -33,37 +38,61 @@ class SudokuApp:
         self.playback_state = "Unrecorded"
         self.step_id = None
 
-    def compare_solvers(self, rep_count:int = 1):
+    def display_benchmark_stats(self):
         """
-        compares runtime stats
-        of all solvers.
-
-        calls a benchmark function
-        to perform the actual testing,
-        then calls another function
-        to display the formatted data.
+        called to display benchmark data
+        once it has been collected.
         """
 
-        reps_text = self.benchmark_reps.get()
-        if reps_text != "":
-            rep_count = max(int(reps_text),1)
+        try:
+            payload = self.benchmark_queue.get_nowait()
+        except queue.Empty:
+            self.root.after(1000, self.display_benchmark_stats)
+            return
 
-        results = run_benchmark(self.generated_library,rep_count)
-        summary_stats = process_summary_statistics(results)
+        self.benchmark_button.config(state='normal')
+        if payload[0] == 'error':
+            print(payload[1])
+            return
 
-        print(f"REP COUNT={rep_count}")
+        msg, results, summary_stats = payload
+        print(msg)
+
+        print(f"REP COUNT={self.rep_count}")
+        
         for r in results:
             display_metrics(r.solver_name, r.data, r.is_valid)
-
+                
         # open a new ResultsView and pass in the data.
         results_view = ResultsView(self.root,results,summary_stats)
-
+                
         save_data = messagebox.askyesno(title="Save Benchmark",
-                                          message="Save benchmark data (data/results/)")
+                                        message="Save benchmark data (data/results/)")
         if save_data:
             save_benchmark_data(results, summary_stats, 
                                 self.generated_library.puzzles[0].batch_index,
-                                rep_count)
+                                self.rep_count)
+
+    def perform_benchmark(self):
+        """
+        once a batch has been
+        selected and loaded,
+        this function is called
+        to initialize the benchmark.
+        """
+        try:
+            reps_text = self.benchmark_reps.get()
+            if reps_text != "":
+                self.rep_count = max(int(reps_text),1)
+            else:
+                self.rep_count = 1
+
+            results = run_benchmark(self.generated_library,self.rep_count)
+            summary_stats = process_summary_statistics(results)
+
+            self.benchmark_queue.put(("success", results, summary_stats))
+        except Exception as error:
+            self.benchmark_queue.put(("error", error))
 
     def display_metrics(self):
         """
@@ -161,6 +190,114 @@ class SudokuApp:
                 else:
                     cell_text = self.display_board[i][j]
                 self.canvas.itemconfigure(self.id_grid[i][j], text=cell_text)
+
+    def cancel_batch_selection(self):
+        """
+        action handler for 'Cancel' in the
+        batch loading window, which backs
+        out of a batch loading process,
+        and also the benchmark.
+        """
+
+        self.batch_select.destroy()
+        self.generated_library = None
+
+    def start_load_batch_selection(self):
+        """
+        threaded function that performs batch loading
+        and benchmarking on a separate thread to
+        keep the main UI responsive during the 
+        process.
+        """
+        self.benchmark_button.config(state="disabled")
+
+        #TODO optional.. create a label that displays benchmark status while it's running.
+
+        worker = threading.Thread(target=self.load_selected_batch, daemon=True)
+        worker.start()
+        self.root.after(1000,self.display_benchmark_stats)
+
+    def load_selected_batch(self):
+        """
+        button action handler that
+        upon being activated, retrieves
+        the selected batch and loads it
+        into the app puzzle library to
+        be benchmarked.
+        """
+        selected_tag = self.batch_list.curselection()[0]
+        selected_batch = self.batch_lookup[selected_tag]
+
+        print("loading batch: ", selected_batch)
+
+        self.generated_library.load_generated_puzzles(selected_batch)
+
+        # once batch is loaded, initialize benchmark
+        self.perform_benchmark()
+
+    def handle_benchmark_batch_select(self):
+        """
+        creates a window that allows the user
+        to select their puzzle batch for the
+        upcoming benchmark.
+        """
+
+        batch_puzzle_counts = {}
+        batch_names = {}
+        gen_folder = Path("./data/generated")
+        batch_files = gen_folder.glob("gen_batch_*.txt")
+        self.batch_lookup = {}
+
+        for batch in batch_files:
+            # get batch name + index from filepath
+            batch_name = batch.stem
+            batch_name_args = batch_name.split('_')
+            index = int(batch_name_args[len(batch_name_args) - 1])
+
+            self.batch_lookup[index] = batch
+            batch_names[index] = batch
+            puzzle_count = 0
+            with open(batch, mode='r', encoding='utf-8') as file:
+
+                for line in file.readlines():
+                    for ch in line:
+                        if ch == '_':
+                            puzzle_count += 1
+                            break
+                        elif ch == ' ':
+                            break
+                batch_puzzle_counts[index] = puzzle_count
+
+        self.batch_select = Toplevel(self.root)
+        self.batch_select.title('Select Benchmark Puzzle Batch')
+        self.batch_select.protocol("WM_DELETE_WINDOW",self.cancel_batch_selection)
+
+        self.batch_list = Listbox(self.batch_select, selectmode='single')
+        self.batch_list.pack(side=LEFT,fill=BOTH)
+
+        scrollbar = Scrollbar(self.batch_select)
+        scrollbar.pack(side=RIGHT,fill=BOTH)
+
+        for index, name in batch_names.items():
+            tag = f"{name.stem} -- {batch_puzzle_counts[index]} puzzles"
+            self.batch_list.insert(END, tag)
+
+        for key,value in self.batch_lookup.items():
+            print("batch info: ", key, value)
+
+        self.batch_list.select_set(0)
+
+        self.batch_list.config(yscrollcommand=scrollbar.set)
+        scrollbar.config(command=self.batch_list.yview)
+
+        button_panel = Frame(self.batch_select)
+        button_panel.pack(anchor='s')
+
+        ok_button = Button(button_panel, text='OK', command=self.start_load_batch_selection)
+        ok_button.pack(side=RIGHT,padx=10,pady=10)
+
+        cancel_button = Button(button_panel, text='Cancel', command=self.cancel_batch_selection)
+        cancel_button.pack(side=RIGHT,padx=10,pady=10)
 
     def handle_record(self):
         """
@@ -265,8 +402,10 @@ class SudokuApp:
 
         reg = benchmark_controls.register(validate_positive_int)
 
-        benchmark_button = Button(benchmark_controls, text="Benchmark", command=self.compare_solvers)
-        benchmark_button.pack(pady=10,side=LEFT)
+        self.benchmark_button = Button(benchmark_controls, text="Benchmark", 
+                                  command=self.handle_benchmark_batch_select)
+        self.benchmark_button.pack(pady=10,side=LEFT)
+
         self.benchmark_reps = Entry(benchmark_controls,validate="key",validatecommand=(reg,"%P"))
         self.benchmark_reps.pack(pady=10,side=LEFT)
 

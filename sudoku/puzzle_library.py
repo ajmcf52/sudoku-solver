@@ -32,8 +32,12 @@ class PuzzleLibrary:
         puzzle = Puzzle()
         puzzle.difficulty = difficulty
         puzzle.name = f"{difficulty}_{index}"
-        puzzle.batch_index = int(index.split('_')[0])
 
+        if type(index) == str:
+            puzzle.batch_index = int(index.split('_')[0])
+        else:
+            puzzle.batch_index = -1
+            
         # forming puzzle
         for puzzle_row in puzzle_string.split():
             grid_row = []

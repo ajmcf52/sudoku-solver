@@ -52,6 +52,11 @@ def generate_board() -> tuple[list[list[int]], list[list[int]], int]:
 
     random.shuffle(positions)
 
+    """
+    removing clues randomly off the board
+    1 by 1. If a removed clue results in
+    an ambiguous board, put it back.
+    """
     for pos in positions:
         digit = board[pos[0]][pos[1]]
         board[pos[0]][pos[1]] = 0
