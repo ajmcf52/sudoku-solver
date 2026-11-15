@@ -1,0 +1,313 @@
+# BATCH 1 DATA
+PUZZLE_COUNT=50.0
+REP_COUNT=1
+--- --- --- --- ---
+# BENCHMARK SUMMARY
+Elapsed solve time		Mean (ms)		Median (ms)
+Basic Backtracking		325.19		52.89
+MRV Backtracking		46.78		21.60
+'Hidden Single' MRV		14.10		10.78
+--- --- --- --- ---
+# RAW DATA
+# format: [solver_id],[puzzle_id],[valid_solve?],[elapsed(ms)],[placements],[backtracks],[max_depth],[solver_calls]
+
+Basic Backtracking,Generated_1_0_cc23_sudoku
+,False,8828.912799996033,2496255,2496197,58,2496256
+MRV Backtracking,Generated_1_0_cc23_sudoku
+,False,21.53579999867361,206,148,58,207
+'Hidden Single' MRV,Generated_1_0_cc23_sudoku
+,False,17.72239999991143,81,23,58,82
+Basic Backtracking,Generated_1_1_cc24_sudoku
+,False,51.15690000093309,14561,14504,57,14562
+MRV Backtracking,Generated_1_1_cc24_sudoku
+,False,19.389399996725842,228,171,57,229
+'Hidden Single' MRV,Generated_1_1_cc24_sudoku
+,False,13.711899999179877,86,29,57,87
+Basic Backtracking,Generated_1_2_cc25_sudoku
+,False,144.69169999938458,40087,40031,56,40088
+MRV Backtracking,Generated_1_2_cc25_sudoku
+,False,98.60260000277776,971,915,56,972
+'Hidden Single' MRV,Generated_1_2_cc25_sudoku
+,False,10.127199995622505,56,0,56,57
+Basic Backtracking,Generated_1_3_cc25_sudoku
+,False,40.457399998558685,12018,11962,56,12019
+MRV Backtracking,Generated_1_3_cc25_sudoku
+,False,6.6617999982554466,63,7,56,64
+'Hidden Single' MRV,Generated_1_3_cc25_sudoku
+,False,9.339600001112558,56,0,56,57
+Basic Backtracking,Generated_1_4_cc25_sudoku
+,False,25.586800002201926,6986,6930,56,6987
+MRV Backtracking,Generated_1_4_cc25_sudoku
+,False,7.108999998308718,69,13,56,70
+'Hidden Single' MRV,Generated_1_4_cc25_sudoku
+,False,9.373200002301019,56,0,56,57
+Basic Backtracking,Generated_1_5_cc27_sudoku
+,False,287.5731000021915,81532,81478,54,81533
+MRV Backtracking,Generated_1_5_cc27_sudoku
+,False,78.86359999974957,854,800,54,855
+'Hidden Single' MRV,Generated_1_5_cc27_sudoku
+,False,18.98050000454532,143,89,54,144
+Basic Backtracking,Generated_1_6_cc23_sudoku
+,False,30.755899999348912,8816,8758,58,8817
+MRV Backtracking,Generated_1_6_cc23_sudoku
+,False,169.0429000009317,1509,1451,58,1510
+'Hidden Single' MRV,Generated_1_6_cc23_sudoku
+,False,9.92240000050515,58,0,58,59
+Basic Backtracking,Generated_1_7_cc26_sudoku
+,False,36.646900000050664,10265,10210,55,10266
+MRV Backtracking,Generated_1_7_cc26_sudoku
+,False,17.823399997723754,146,91,55,147
+'Hidden Single' MRV,Generated_1_7_cc26_sudoku
+,False,11.6009000048507,75,20,55,76
+Basic Backtracking,Generated_1_8_cc23_sudoku
+,False,8.676500001456589,2414,2356,58,2415
+MRV Backtracking,Generated_1_8_cc23_sudoku
+,False,15.592200004903134,157,99,58,158
+'Hidden Single' MRV,Generated_1_8_cc23_sudoku
+,False,12.907199998153374,73,15,58,74
+Basic Backtracking,Generated_1_9_cc25_sudoku
+,False,44.35540000122273,12875,12819,56,12876
+MRV Backtracking,Generated_1_9_cc25_sudoku
+,False,13.94599999912316,138,82,56,139
+'Hidden Single' MRV,Generated_1_9_cc25_sudoku
+,False,9.231900003214832,56,0,56,57
+Basic Backtracking,Generated_1_10_cc23_sudoku
+,False,54.698300002200995,14920,14862,58,14921
+MRV Backtracking,Generated_1_10_cc23_sudoku
+,False,21.65870000317227,232,174,58,233
+'Hidden Single' MRV,Generated_1_10_cc23_sudoku
+,False,9.856600001512561,58,0,58,59
+Basic Backtracking,Generated_1_11_cc25_sudoku
+,False,10.848100006114691,3235,3179,56,3236
+MRV Backtracking,Generated_1_11_cc25_sudoku
+,False,15.190899997833185,154,98,56,155
+'Hidden Single' MRV,Generated_1_11_cc25_sudoku
+,False,9.251700001186691,56,0,56,57
+Basic Backtracking,Generated_1_12_cc24_sudoku
+,False,3.7310999978217296,1101,1044,57,1102
+MRV Backtracking,Generated_1_12_cc24_sudoku
+,False,10.675499994249549,103,46,57,104
+'Hidden Single' MRV,Generated_1_12_cc24_sudoku
+,False,11.772999998356681,72,15,57,73
+Basic Backtracking,Generated_1_13_cc25_sudoku
+,False,8.749100001296028,2379,2323,56,2380
+MRV Backtracking,Generated_1_13_cc25_sudoku
+,False,6.2433999992208555,68,12,56,69
+'Hidden Single' MRV,Generated_1_13_cc25_sudoku
+,False,9.498299994447734,56,0,56,57
+Basic Backtracking,Generated_1_14_cc26_sudoku
+,False,0.9178000036627054,284,229,55,285
+MRV Backtracking,Generated_1_14_cc26_sudoku
+,False,12.255800000275485,133,78,55,134
+'Hidden Single' MRV,Generated_1_14_cc26_sudoku
+,False,12.388499999360647,80,25,55,81
+Basic Backtracking,Generated_1_15_cc23_sudoku
+,False,215.43129999918165,61053,60995,58,61054
+MRV Backtracking,Generated_1_15_cc23_sudoku
+,False,135.9796999968239,1315,1257,58,1316
+'Hidden Single' MRV,Generated_1_15_cc23_sudoku
+,False,20.106799995119218,108,50,58,109
+Basic Backtracking,Generated_1_16_cc25_sudoku
+,False,342.2924999977113,94739,94683,56,94740
+MRV Backtracking,Generated_1_16_cc25_sudoku
+,False,56.74659999931464,521,465,56,522
+'Hidden Single' MRV,Generated_1_16_cc25_sudoku
+,False,10.835000000952277,56,0,56,57
+Basic Backtracking,Generated_1_17_cc25_sudoku
+,False,579.3435999948997,157648,157592,56,157649
+MRV Backtracking,Generated_1_17_cc25_sudoku
+,False,9.83289999567205,108,52,56,109
+'Hidden Single' MRV,Generated_1_17_cc25_sudoku
+,False,10.066000002552755,62,6,56,63
+Basic Backtracking,Generated_1_18_cc24_sudoku
+,False,17.5775000025169,5095,5038,57,5096
+MRV Backtracking,Generated_1_18_cc24_sudoku
+,False,36.1546999993152,345,288,57,346
+'Hidden Single' MRV,Generated_1_18_cc24_sudoku
+,False,9.921500000928063,57,0,57,58
+Basic Backtracking,Generated_1_19_cc25_sudoku
+,False,559.0881999960402,149719,149663,56,149720
+MRV Backtracking,Generated_1_19_cc25_sudoku
+,False,6.0607999985222705,61,5,56,62
+'Hidden Single' MRV,Generated_1_19_cc25_sudoku
+,False,9.269800000765827,56,0,56,57
+Basic Backtracking,Generated_1_20_cc24_sudoku
+,False,539.8292000027141,151671,151614,57,151672
+MRV Backtracking,Generated_1_20_cc24_sudoku
+,False,226.80510000645882,2271,2214,57,2272
+'Hidden Single' MRV,Generated_1_20_cc24_sudoku
+,False,9.885400002531242,57,0,57,58
+Basic Backtracking,Generated_1_21_cc25_sudoku
+,False,4.676600001403131,1331,1275,56,1332
+MRV Backtracking,Generated_1_21_cc25_sudoku
+,False,5.6207000016001984,56,0,56,57
+'Hidden Single' MRV,Generated_1_21_cc25_sudoku
+,False,8.988900000986177,56,0,56,57
+Basic Backtracking,Generated_1_22_cc25_sudoku
+,False,136.237999999139,37455,37399,56,37456
+MRV Backtracking,Generated_1_22_cc25_sudoku
+,False,235.09839999314863,2143,2087,56,2144
+'Hidden Single' MRV,Generated_1_22_cc25_sudoku
+,False,59.408799999800976,355,299,56,356
+Basic Backtracking,Generated_1_23_cc25_sudoku
+,False,52.27210000157356,14947,14891,56,14948
+MRV Backtracking,Generated_1_23_cc25_sudoku
+,False,30.235300000640564,305,249,56,306
+'Hidden Single' MRV,Generated_1_23_cc25_sudoku
+,False,10.21519999630982,56,0,56,57
+Basic Backtracking,Generated_1_24_cc26_sudoku
+,False,47.67059999721823,13782,13727,55,13783
+MRV Backtracking,Generated_1_24_cc26_sudoku
+,False,54.21389999537496,541,486,55,542
+'Hidden Single' MRV,Generated_1_24_cc26_sudoku
+,False,15.821499997400679,88,33,55,89
+Basic Backtracking,Generated_1_25_cc25_sudoku
+,False,23.329200004809536,6619,6563,56,6620
+MRV Backtracking,Generated_1_25_cc25_sudoku
+,False,8.575499996368308,87,31,56,88
+'Hidden Single' MRV,Generated_1_25_cc25_sudoku
+,False,8.913600002415478,56,0,56,57
+Basic Backtracking,Generated_1_26_cc24_sudoku
+,False,136.54479999968316,39737,39680,57,39738
+MRV Backtracking,Generated_1_26_cc24_sudoku
+,False,9.311200003139675,96,39,57,97
+'Hidden Single' MRV,Generated_1_26_cc24_sudoku
+,False,11.447299999417737,57,0,57,58
+Basic Backtracking,Generated_1_27_cc24_sudoku
+,False,347.6425999979256,101650,101593,57,101651
+MRV Backtracking,Generated_1_27_cc24_sudoku
+,False,94.48130000237143,808,751,57,809
+'Hidden Single' MRV,Generated_1_27_cc24_sudoku
+,False,11.815599995316006,66,9,57,67
+Basic Backtracking,Generated_1_28_cc25_sudoku
+,False,83.61470000090776,22320,22264,56,22321
+MRV Backtracking,Generated_1_28_cc25_sudoku
+,False,41.00219999963883,427,371,56,428
+'Hidden Single' MRV,Generated_1_28_cc25_sudoku
+,False,9.660399999120273,56,0,56,57
+Basic Backtracking,Generated_1_29_cc25_sudoku
+,False,48.10649999853922,13616,13560,56,13617
+MRV Backtracking,Generated_1_29_cc25_sudoku
+,False,88.72479999990901,745,689,56,746
+'Hidden Single' MRV,Generated_1_29_cc25_sudoku
+,False,8.996700002171565,56,0,56,57
+Basic Backtracking,Generated_1_30_cc25_sudoku
+,False,226.83949999918696,58903,58847,56,58904
+MRV Backtracking,Generated_1_30_cc25_sudoku
+,False,44.94620000332361,425,369,56,426
+'Hidden Single' MRV,Generated_1_30_cc25_sudoku
+,False,14.786400002776645,82,26,56,83
+Basic Backtracking,Generated_1_31_cc26_sudoku
+,False,330.94050000363495,91414,91359,55,91415
+MRV Backtracking,Generated_1_31_cc26_sudoku
+,False,20.799400001124013,201,146,55,202
+'Hidden Single' MRV,Generated_1_31_cc26_sudoku
+,False,17.943899998499546,105,50,55,106
+Basic Backtracking,Generated_1_32_cc23_sudoku
+,False,38.282599998638034,11400,11342,58,11401
+MRV Backtracking,Generated_1_32_cc23_sudoku
+,False,41.12219999660738,408,350,58,409
+'Hidden Single' MRV,Generated_1_32_cc23_sudoku
+,False,10.39160000073025,58,0,58,59
+Basic Backtracking,Generated_1_33_cc24_sudoku
+,False,12.815699999919161,3713,3656,57,3714
+MRV Backtracking,Generated_1_33_cc24_sudoku
+,False,5.891299995710142,57,0,57,58
+'Hidden Single' MRV,Generated_1_33_cc24_sudoku
+,False,9.773199999472126,57,0,57,58
+Basic Backtracking,Generated_1_34_cc23_sudoku
+,False,367.96809999941615,100095,100037,58,100096
+MRV Backtracking,Generated_1_34_cc23_sudoku
+,False,36.3913000037428,360,302,58,361
+'Hidden Single' MRV,Generated_1_34_cc23_sudoku
+,False,9.971599996788427,58,0,58,59
+Basic Backtracking,Generated_1_35_cc25_sudoku
+,False,32.38270000292687,8958,8902,56,8959
+MRV Backtracking,Generated_1_35_cc25_sudoku
+,False,88.98989999579499,786,730,56,787
+'Hidden Single' MRV,Generated_1_35_cc25_sudoku
+,False,26.75019999878714,138,82,56,139
+Basic Backtracking,Generated_1_36_cc24_sudoku
+,False,61.23840000509517,15276,15219,57,15277
+MRV Backtracking,Generated_1_36_cc24_sudoku
+,False,40.06749999825843,447,390,57,448
+'Hidden Single' MRV,Generated_1_36_cc24_sudoku
+,False,18.362900002102833,105,48,57,106
+Basic Backtracking,Generated_1_37_cc25_sudoku
+,False,135.1351999983308,38836,38780,56,38837
+MRV Backtracking,Generated_1_37_cc25_sudoku
+,False,10.97769999614684,107,51,56,108
+'Hidden Single' MRV,Generated_1_37_cc25_sudoku
+,False,12.288499994610902,68,12,56,69
+Basic Backtracking,Generated_1_38_cc24_sudoku
+,False,15.824599999177735,4397,4340,57,4398
+MRV Backtracking,Generated_1_38_cc24_sudoku
+,False,10.252200001559686,100,43,57,101
+'Hidden Single' MRV,Generated_1_38_cc24_sudoku
+,False,11.375100002624094,62,5,57,63
+Basic Backtracking,Generated_1_39_cc23_sudoku
+,False,257.1246000006795,71134,71076,58,71135
+MRV Backtracking,Generated_1_39_cc23_sudoku
+,False,22.834099996543955,183,125,58,184
+'Hidden Single' MRV,Generated_1_39_cc23_sudoku
+,False,20.431700002518483,108,50,58,109
+Basic Backtracking,Generated_1_40_cc25_sudoku
+,False,15.197400003671646,4445,4389,56,4446
+MRV Backtracking,Generated_1_40_cc25_sudoku
+,False,63.54300000384683,536,480,56,537
+'Hidden Single' MRV,Generated_1_40_cc25_sudoku
+,False,26.211800002784003,153,97,56,154
+Basic Backtracking,Generated_1_41_cc24_sudoku
+,False,53.51209999935236,15475,15418,57,15476
+MRV Backtracking,Generated_1_41_cc24_sudoku
+,False,22.6394999990589,190,133,57,191
+'Hidden Single' MRV,Generated_1_41_cc24_sudoku
+,False,9.483200003160164,57,0,57,58
+Basic Backtracking,Generated_1_42_cc24_sudoku
+,False,620.7132999988971,173291,173234,57,173292
+MRV Backtracking,Generated_1_42_cc24_sudoku
+,False,14.624600000388455,141,84,57,142
+'Hidden Single' MRV,Generated_1_42_cc24_sudoku
+,False,9.862200000497978,57,0,57,58
+Basic Backtracking,Generated_1_43_cc25_sudoku
+,False,7.861999998567626,2115,2059,56,2116
+MRV Backtracking,Generated_1_43_cc25_sudoku
+,False,10.141999999177642,98,42,56,99
+'Hidden Single' MRV,Generated_1_43_cc25_sudoku
+,False,10.71840000076918,67,11,56,68
+Basic Backtracking,Generated_1_44_cc25_sudoku
+,False,128.80450000375276,34791,34735,56,34792
+MRV Backtracking,Generated_1_44_cc25_sudoku
+,False,201.05689999763854,2048,1992,56,2049
+'Hidden Single' MRV,Generated_1_44_cc25_sudoku
+,False,39.13240000110818,218,162,56,219
+Basic Backtracking,Generated_1_45_cc26_sudoku
+,False,562.1541000000434,157900,157845,55,157901
+MRV Backtracking,Generated_1_45_cc26_sudoku
+,False,11.696699999447446,94,39,55,95
+'Hidden Single' MRV,Generated_1_45_cc26_sudoku
+,False,10.67950000287965,60,5,55,61
+Basic Backtracking,Generated_1_46_cc23_sudoku
+,False,371.5142000000924,98274,98216,58,98275
+MRV Backtracking,Generated_1_46_cc23_sudoku
+,False,34.9354999998468,286,228,58,287
+'Hidden Single' MRV,Generated_1_46_cc23_sudoku
+,False,12.83559999865247,81,23,58,82
+Basic Backtracking,Generated_1_47_cc23_sudoku
+,False,289.0172999977949,75575,75517,58,75576
+MRV Backtracking,Generated_1_47_cc23_sudoku
+,False,79.40329999837559,778,720,58,779
+'Hidden Single' MRV,Generated_1_47_cc23_sudoku
+,False,22.391400001652073,107,49,58,108
+Basic Backtracking,Generated_1_48_cc26_sudoku
+,False,4.074099997524172,1199,1144,55,1200
+MRV Backtracking,Generated_1_48_cc26_sudoku
+,False,8.317100000567734,87,32,55,88
+'Hidden Single' MRV,Generated_1_48_cc26_sudoku
+,False,9.231000003637746,55,0,55,56
+Basic Backtracking,Generated_1_49_cc25_sudoku
+,False,16.546499995456543,5003,4947,56,5004
+MRV Backtracking,Generated_1_49_cc25_sudoku
+,False,17.0667999991565,141,85,56,142
+'Hidden Single' MRV,Generated_1_49_cc25_sudoku
+,False,11.380899995856453,71,15,56,72

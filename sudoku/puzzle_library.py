@@ -62,6 +62,9 @@ class PuzzleLibrary:
         the 1st line being a puzzle tag ID.
         """
 
+        # clear any existing puzzles before loading more
+        self.puzzles.clear()
+
         with open(filepath, encoding='utf-8') as file:
             while True:
                 tag_id = file.readline()

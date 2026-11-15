@@ -1,4 +1,5 @@
 from typing import NamedTuple
+import queue
 from statistics import mean, median
 import datetime as dt
 from sudoku.config import solver_options
@@ -85,8 +86,7 @@ def verify_benchmark_single(board: list[list[int]], solution: list[list[int]]) -
                 return False
     return True
 
-
-def run_benchmark(puzzle_library: PuzzleLibrary, rep_count:int = 1) -> list[BenchmarkResult]:
+def run_benchmark(puzzle_library: PuzzleLibrary, event_queue: queue.Queue, rep_count:int = 1) -> list[BenchmarkResult]:
         """
         compares runtime stats
         of all solvers.
@@ -98,6 +98,7 @@ def run_benchmark(puzzle_library: PuzzleLibrary, rep_count:int = 1) -> list[Benc
         for selecting solvers to compare.
         """
         results = []
+        solve_count = 0
         for puzzle in puzzle_library.puzzles:
 
             for solver_name, solver in solver_options.items():
@@ -123,4 +124,9 @@ def run_benchmark(puzzle_library: PuzzleLibrary, rep_count:int = 1) -> list[Benc
                         metrics.elapsed_sec = median(times)
                         results.append(BenchmarkResult(solver_name,metrics,valid_metrics))
                         break
+
+            solve_count += 1
+            update_text = f"Solved {solve_count} out of {len(puzzle_library.puzzles)} puzzles"
+            event_queue.put(("update", update_text))
+
         return results

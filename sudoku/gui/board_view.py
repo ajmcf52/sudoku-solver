@@ -15,9 +15,13 @@ class SudokuApp:
     def __init__(self, root: Tk, puzzle: Puzzle, samples: PuzzleLibrary, generated: PuzzleLibrary):
         self.playback_speed_index = 0
         self.playback_speed = speed_selections[self.playback_speed_index]
+        
         self.samples_library = samples
         self.generated_library = generated
+        
         self.benchmark_queue = queue.Queue()
+        self.benchmark_puz_label = None
+
         self.puzzle = puzzle
         self.display_board = [row[:] for row in self.puzzle.board]
         self.root = root
@@ -46,12 +50,23 @@ class SudokuApp:
 
         try:
             payload = self.benchmark_queue.get_nowait()
+            while self.benchmark_queue.qsize() > 0 and payload[0] == 'update':
+                payload = self.benchmark_queue.get_nowait()
+
         except queue.Empty:
-            self.root.after(1000, self.display_benchmark_stats)
+            self.root.after(100, self.display_benchmark_stats)
+            return
+        
+        # if event is an update, don't reset benchmark button yet.
+        if payload[0] == 'update':
+            new_text = payload[1]
+            self.benchmark_puz_label.config(text=f'BENCHMARK IN PROGRESS -- {new_text}')
+            self.root.after(100, self.display_benchmark_stats)
             return
 
         self.benchmark_button.config(state='normal')
         if payload[0] == 'error':
+            self.benchmark_puz_label.config(text=f'Benchmark Error! {payload[1]}')
             print(payload[1])
             return
 
@@ -59,7 +74,8 @@ class SudokuApp:
         print(msg)
 
         print(f"REP COUNT={self.rep_count}")
-        
+
+        self.benchmark_puz_label.config(text='Benchmark Complete!')
         for r in results:
             display_metrics(r.solver_name, r.data, r.is_valid)
                 
@@ -72,6 +88,7 @@ class SudokuApp:
             save_benchmark_data(results, summary_stats, 
                                 self.generated_library.puzzles[0].batch_index,
                                 self.rep_count)
+            self.benchmark_puz_label.config(text='BENCHMARK STATUS -- Standby')
 
     def perform_benchmark(self):
         """
@@ -81,13 +98,17 @@ class SudokuApp:
         to initialize the benchmark.
         """
         try:
+            self.generated_library.load_generated_puzzles(self.selected_batch)
+
             reps_text = self.benchmark_reps.get()
             if reps_text != "":
                 self.rep_count = max(int(reps_text),1)
             else:
                 self.rep_count = 1
 
-            results = run_benchmark(self.generated_library,self.rep_count)
+            results = run_benchmark(self.generated_library,
+                                    event_queue=self.benchmark_queue,
+                                    rep_count=self.rep_count)
             summary_stats = process_summary_statistics(results)
 
             self.benchmark_queue.put(("success", results, summary_stats))
@@ -200,7 +221,6 @@ class SudokuApp:
         """
 
         self.batch_select.destroy()
-        self.generated_library = None
 
     def start_load_batch_selection(self):
         """
@@ -209,13 +229,15 @@ class SudokuApp:
         keep the main UI responsive during the 
         process.
         """
+        self.selected_tag = self.batch_list.curselection()[0]
+        self.selected_batch = self.batch_lookup[self.selected_tag]
         self.benchmark_button.config(state="disabled")
+
+        self.batch_select.destroy()
 
         #TODO optional.. create a label that displays benchmark status while it's running.
 
-        worker = threading.Thread(target=self.load_selected_batch, daemon=True)
-        worker.start()
-        self.root.after(1000,self.display_benchmark_stats)
+        self.load_selected_batch()
 
     def load_selected_batch(self):
         """
@@ -225,15 +247,15 @@ class SudokuApp:
         into the app puzzle library to
         be benchmarked.
         """
-        selected_tag = self.batch_list.curselection()[0]
-        selected_batch = self.batch_lookup[selected_tag]
 
-        print("loading batch: ", selected_batch)
+        self.benchmark_puz_label.config(text='Benchmark puzzles selected. Initializing...')
 
-        self.generated_library.load_generated_puzzles(selected_batch)
+        print("loading batch: ", self.selected_batch)
 
         # once batch is loaded, initialize benchmark
-        self.perform_benchmark()
+        worker = threading.Thread(target=self.perform_benchmark, daemon=True)
+        worker.start()
+        self.root.after(100,self.display_benchmark_stats)
 
     def handle_benchmark_batch_select(self):
         """
@@ -337,15 +359,23 @@ class SudokuApp:
             self.root.after_cancel(self.step_id)
             self.step_id = None
 
+    def update_benchmark_label(self, new_text: str):
+        pass
+
     def setup_dropdowns(self):
         """
         dropdown menu setup.
         controls for puzzle 
         and solver selection.
         """
+        self.benchmark_progress_frame = Frame(self.root)
+        self.benchmark_progress_frame.pack()
+        dropdowns = Frame(self.benchmark_progress_frame)
+        dropdowns.grid(pady=10,column=0,row=0)
 
-        dropdowns = Frame(self.root)
-        dropdowns.pack(pady=10)
+        self.benchmark_puz_label = Label(self.benchmark_progress_frame, 
+                                         text='BENCHMARK STATUS -- Standby')
+        self.benchmark_puz_label.grid(column=0,row=1,pady=10)
 
         puzzle_names = []
         easy_count = 0
@@ -364,11 +394,11 @@ class SudokuApp:
                 puzzle_names.append(puzzle.difficulty + " " + str(hard_count))
 
         self.puzzle_dropdown = ttk.Combobox(dropdowns, state="readonly", values=puzzle_names)
-        self.puzzle_dropdown.pack(pady=10, side=LEFT)
+        self.puzzle_dropdown.pack(pady=10,side=LEFT,anchor='nw')
         self.puzzle_dropdown.current(0) # set puzzle dropdown to match current selection
 
         self.solver_dropdown = ttk.Combobox(dropdowns, state="readonly", values=list(solver_options))
-        self.solver_dropdown.pack(pady=10,padx=10,side=LEFT)
+        self.solver_dropdown.pack(pady=10,padx=10,side=LEFT,anchor='ne')
         self.solver_dropdown.current(0)
 
     def setup_buttons(self):
@@ -396,6 +426,9 @@ class SudokuApp:
 
         load_button = Button(controls, text="Load", command=self.load_configuration)
         load_button.pack(padx=10, pady=10, side=LEFT)
+
+        # benchmark-specific stuff
+        # buttons, text entry -- label is set up with dropdowns.
 
         benchmark_controls = Frame(controls)
         benchmark_controls.pack(pady=10)
@@ -548,7 +581,7 @@ def main():
     samples_library = PuzzleLibrary()
     samples_library.load_puzzle_library()
     generated_library = PuzzleLibrary()
-    generated_library.load_generated_puzzles("./data/generated/gen_batch_1.txt")
+    # generated_library.load_generated_puzzles("./data/generated/gen_batch_1.txt")
     app = SudokuApp(root, samples_library.puzzles[0],samples_library,generated_library)
     root.mainloop()
 
