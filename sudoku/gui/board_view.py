@@ -234,9 +234,6 @@ class SudokuApp:
         self.benchmark_button.config(state="disabled")
 
         self.batch_select.destroy()
-
-        #TODO optional.. create a label that displays benchmark status while it's running.
-
         self.load_selected_batch()
 
     def load_selected_batch(self):
