@@ -1,6 +1,6 @@
 from tkinter.ttk import Treeview
-from tkinter import Toplevel, Tk, Frame, Label
-from sudoku.metrics.benchmark import BenchmarkResult
+from tkinter import Toplevel, Tk, Frame, Label, Button, messagebox
+from sudoku.metrics.benchmark import BenchmarkResult, save_benchmark_data
 from sudoku.config import solver_options
 
 METRICS_LABELS = ["Solver name",
@@ -22,7 +22,13 @@ COL_WIDTHS = [120,
               75]
 
 class ResultsView:
-    def __init__(self, root: Tk, results: list[BenchmarkResult], summary_stats: dict):
+    def __init__(self, 
+                 root: Tk, 
+                 results: list[BenchmarkResult], 
+                 summary_stats: dict,
+                 benchmark_progress_label: Label,
+                 batch_index:int,
+                 rep_count:int = 1):
         self.data = results
         self.summary_stats = summary_stats
         self.row_count = len(self.data)
@@ -31,6 +37,9 @@ class ResultsView:
         self.top_level = None
         self.col_labels = [label for label in METRICS_LABELS]
         self.tree = None
+        self.benchmark_puz_label = benchmark_progress_label
+        self.batch_index = batch_index
+        self.rep_count = rep_count
 
         self.draw_window()
         self.draw_table()
@@ -87,14 +96,36 @@ class ResultsView:
             col_values.append(d.solver_calls)
             self.tree.insert('','end',values=col_values)
 
+    def prompt_save_data(self):
+        """
+        saves report data.
+        """
+        save_data = messagebox.askyesno(title="Save Benchmark",
+                                        message="Save benchmark data? (data/results/)")
+        if save_data:
+            save_benchmark_data(self.data, self.summary_stats, 
+                                self.batch_index,
+                                self.rep_count)
+        self.benchmark_puz_label.config(text='BENCHMARK STATUS -- Standby')    
+
     def draw_benchmark_summary(self):
         """
         displays a data summary of
         average and median runtimes
         between solvers.
+
+        includes a button in the corner
+        that saves the data when pressed.
         """
-        self.summary_panel = Frame(self.top_level)
-        self.summary_panel.pack(pady=15,anchor='s')
+        self.summary_panel_master = Frame(self.top_level)
+        self.summary_panel_master.pack(pady=15,anchor='s')
+        self.summary_panel = Frame(self.summary_panel_master)
+        self.summary_panel.grid(pady=15,column=1,row=0)
+
+        self.save_report_btn = Button(self.summary_panel_master,
+                                      text='Save Report',
+                                      command=self.prompt_save_data)
+        self.save_report_btn.grid(pady=15,padx=15,column=0,row=0)
 
         average_title_label = Label(self.summary_panel,text='Average (ms)')
         average_title_label.grid(column=0,row=1,padx=15,pady=10)

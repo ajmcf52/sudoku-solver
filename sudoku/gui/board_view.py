@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import ttk, messagebox, Toplevel, Scrollbar, Listbox
+from tkinter import ttk, Toplevel, Scrollbar, Listbox
 from pathlib import Path
 import queue
 import threading
@@ -80,15 +80,12 @@ class SudokuApp:
             display_metrics(r.solver_name, r.data, r.is_valid)
                 
         # open a new ResultsView and pass in the data.
-        results_view = ResultsView(self.root,results,summary_stats)
-                
-        save_data = messagebox.askyesno(title="Save Benchmark",
-                                        message="Save benchmark data (data/results/)")
-        if save_data:
-            save_benchmark_data(results, summary_stats, 
-                                self.generated_library.puzzles[0].batch_index,
-                                self.rep_count)
-            self.benchmark_puz_label.config(text='BENCHMARK STATUS -- Standby')
+        results_view = ResultsView(root=self.root,
+                                   results=results,
+                                   summary_stats=summary_stats,
+                                   benchmark_progress_label=self.benchmark_puz_label,
+                                   batch_index=self.generated_library.puzzles[0].batch_index,
+                                   rep_count=self.rep_count)
 
     def perform_benchmark(self):
         """
