@@ -1,0 +1,43 @@
+# BATCH 0 DATA
+PUZZLE_COUNT=10
+REP_COUNT=1
+--- --- --- --- ---
+# BENCHMARK SUMMARY
+Elapsed solve time		Mean (ms)		Median (ms)
+Basic Backtracking		167.78		69.57
+MRV Backtracking		50.36		13.74
+'Hidden Single' MRV		11.00		9.99
+--- --- --- --- ---
+# RAW DATA
+# format: [solver_id],[puzzle_id],[valid_solve?],[elapsed(ms)],[placements],[backtracks],[max_depth],[solver_calls]
+
+Basic Backtracking,Generated_0_0_cc24_sudoku,True,104.9180999998498,28498,28441,57,28499
+MRV Backtracking,Generated_0_0_cc24_sudoku,True,8.884099999704631,75,18,57,76
+'Hidden Single' MRV,Generated_0_0_cc24_sudoku,True,12.723499999992782,57,0,57,58
+Basic Backtracking,Generated_0_1_cc27_sudoku,True,4.855300000599527,1423,1369,54,1424
+MRV Backtracking,Generated_0_1_cc27_sudoku,True,51.268700000036915,508,454,54,509
+'Hidden Single' MRV,Generated_0_1_cc27_sudoku,True,9.134499999163381,54,0,54,55
+Basic Backtracking,Generated_0_2_cc25_sudoku,True,3.9978000004339265,1103,1047,56,1104
+MRV Backtracking,Generated_0_2_cc25_sudoku,True,12.47220000004745,104,48,56,105
+'Hidden Single' MRV,Generated_0_2_cc25_sudoku,True,9.05239999974583,56,0,56,57
+Basic Backtracking,Generated_0_3_cc23_sudoku,True,39.51039999992645,10689,10631,58,10690
+MRV Backtracking,Generated_0_3_cc23_sudoku,True,270.4890000004525,2274,2216,58,2275
+'Hidden Single' MRV,Generated_0_3_cc23_sudoku,True,10.204600000179198,58,0,58,59
+Basic Backtracking,Generated_0_4_cc26_sudoku,True,1.2403000000631437,343,288,55,344
+MRV Backtracking,Generated_0_4_cc26_sudoku,True,7.29349999983242,87,32,55,88
+'Hidden Single' MRV,Generated_0_4_cc26_sudoku,True,9.41309999961959,55,0,55,56
+Basic Backtracking,Generated_0_5_cc24_sudoku,True,583.8880999999674,165367,165310,57,165368
+MRV Backtracking,Generated_0_5_cc24_sudoku,True,6.32580000001326,61,4,57,62
+'Hidden Single' MRV,Generated_0_5_cc24_sudoku,True,10.031499999968219,57,0,57,58
+Basic Backtracking,Generated_0_6_cc24_sudoku,True,4.984600000170758,1258,1201,57,1259
+MRV Backtracking,Generated_0_6_cc24_sudoku,True,15.008400000624533,142,85,57,143
+'Hidden Single' MRV,Generated_0_6_cc24_sudoku,True,9.944899999936752,57,0,57,58
+Basic Backtracking,Generated_0_7_cc23_sudoku,True,716.1167999993268,192663,192605,58,192664
+MRV Backtracking,Generated_0_7_cc23_sudoku,True,36.99479999977484,362,304,58,363
+'Hidden Single' MRV,Generated_0_7_cc23_sudoku,True,12.327700000241748,66,8,58,67
+Basic Backtracking,Generated_0_8_cc24_sudoku,True,118.66699999973207,32488,32431,57,32489
+MRV Backtracking,Generated_0_8_cc24_sudoku,True,85.93819999987318,757,700,57,758
+'Hidden Single' MRV,Generated_0_8_cc24_sudoku,True,17.65330000034737,91,34,57,92
+Basic Backtracking,Generated_0_9_cc24_sudoku,True,99.62660000019241,28635,28578,57,28636
+MRV Backtracking,Generated_0_9_cc24_sudoku,True,8.891800000128569,82,25,57,83
+'Hidden Single' MRV,Generated_0_9_cc24_sudoku,True,9.491199999501987,57,0,57,58

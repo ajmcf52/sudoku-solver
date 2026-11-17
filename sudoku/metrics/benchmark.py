@@ -23,7 +23,7 @@ def save_benchmark_data(results: list[BenchmarkResult],
     timestamp = dt.datetime.now().strftime('%d%m%y_%H%M%S')
     
     file_name = f"data/results/batch_{batch_index}_{timestamp}_data.txt"
-    puzzle_count = len(results) / (len(solver_options))
+    puzzle_count = int(len(results) / (len(solver_options)))
     with open(file_name, mode='w', encoding='utf-8') as file:
 
         file.write(f"# BATCH {batch_index} DATA\n")
@@ -53,7 +53,7 @@ def get_raw_data_line(result: BenchmarkResult) -> str:
     """
     r = result
     elapsed_ms = r.data.elapsed_sec * 1000
-    return f"{r.solver_name},{r.data.puzzle_name},{r.data.valid},{elapsed_ms}," \
+    return f"{r.solver_name},{r.data.puzzle_name},{r.is_valid},{elapsed_ms}," \
     f"{r.data.placements},{r.data.backtracks},{r.data.max_depth},{r.data.solver_calls}\n"
 
 def process_summary_statistics(results: list[BenchmarkResult]) -> dict:

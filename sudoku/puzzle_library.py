@@ -67,7 +67,9 @@ class PuzzleLibrary:
 
         with open(filepath, encoding='utf-8') as file:
             while True:
-                tag_id = file.readline()
+                
+                # remove newline char at end of puzzle name
+                tag_id = file.readline().rstrip("\r\n")
                 if tag_id == "":
                     break
                 puzzle_str = file.readline()

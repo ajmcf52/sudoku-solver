@@ -42,6 +42,47 @@ class SudokuApp:
         self.playback_state = "Unrecorded"
         self.step_id = None
 
+    def view_recorded_benchmark_data(self,filepath: Path):
+        """
+        loads a benchmark result file into a 
+        corresponding ResultsView for an 
+        easy-to-read formatted data tables.
+        
+        presuming a valid filepath, as it will be
+        globbed from the ./results data folder.
+        """
+
+        with open(filepath,mode='r',encoding='utf-8') as file:
+            # skipping lines until we reach our first '---*'
+            line = file.readline()
+            
+            # using '--- --- --- --- ---' as a file delimiter.
+            while not line.startswith('---') and line != "":
+                line = file.readline()
+
+            # skip two more lines, then we're at our summary data.
+            file.readline()
+            file.readline()
+            summary_dict = {}
+
+            while True:
+                summary_args = file.readline().split('\t\t')
+                if len(summary_args) <= 1:
+                    break
+            
+                solver_name = summary_args[0]
+                summary_dict[solver_name] = []
+
+                mean_elapsed_ms = summary_args[1]
+                median_elapsed_ms = summary_args[2].rstrip('\n')
+                
+                # summary dict stores time data in seconds.
+                summary_dict[solver_name] = (float(mean_elapsed_ms) / 1000,
+                                             float(median_elapsed_ms) / 1000)
+
+            # TODO finish parser (read 'raw data' portion)
+
+    
     def display_benchmark_stats(self):
         """
         called to display benchmark data
@@ -486,6 +527,14 @@ class SudokuApp:
         def on_removal(row,col):
             events.append(("remove",row,col,0))
         solved, metrics = solve(cells, on_placement, on_removal,self.solver)
+
+        """
+        secondary validity check omitted,
+        as we uphold our solver invariant.
+
+        (see generator.generate_board() for more information)
+        
+        """
 
         metrics.puzzle_name = self.puzzle.name
         self.metrics = metrics

@@ -14,4 +14,3 @@ class SearchMetrics:
         self.max_depth = 0 # recursive call depth
         self.elapsed_sec = 0.0 # time
         self.puzzle_name = ""
-        self.valid = False

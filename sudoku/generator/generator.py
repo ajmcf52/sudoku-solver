@@ -42,6 +42,16 @@ def generate_board() -> tuple[list[list[int]], list[list[int]], int]:
     solved, metrics = solve(board,solver=solve_random_mrv)
     if not solved:
         raise ValueError("Unable to solve board during puzzle generation")
+
+    """
+    Here, a secondary validity check is omitted,
+    as we uphold our solver invariant:
+    
+    1. initial board state is found to be legal.
+    2. strictly legal placements are permitted.
+    3. dead-ends (i.e. no legal placements) are met with a backtrack.
+    4. thus, reaching the state of "no empty cells" indicates a legal solve.
+    """
     
     solution = [row[:] for row in board]
 
