@@ -1,6 +1,8 @@
 
 class SearchMetrics:
-    def __init__(self):
+    def __init__(self, puzzle_name:str = "", elapsed_sec:float = 0.0,
+                 placements:int = 0, backtracks:int = 0, max_depth:int = 0,
+                 solver_calls:int = 0):
         """
         constructor for SearchMetrics object.
         all attributes are counters that are 
@@ -8,9 +10,9 @@ class SearchMetrics:
         a given puzzle.
 
         """
-        self.placements = 0 # valid placement of a number in a cell
-        self.solver_calls = 0 # recursive function calls + 1
-        self.backtracks = 0 # number of times the function removes a placement
-        self.max_depth = 0 # recursive call depth
-        self.elapsed_sec = 0.0 # time
-        self.puzzle_name = ""
+        self.placements = placements # valid placement of a number in a cell
+        self.solver_calls = solver_calls # recursive function calls + 1
+        self.backtracks = backtracks # number of times the function removes a placement
+        self.max_depth = max_depth # recursive call depth
+        self.elapsed_sec = elapsed_sec # time
+        self.puzzle_name = puzzle_name

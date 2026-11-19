@@ -5,9 +5,9 @@ import queue
 import threading
 import time
 from sudoku.metrics.metrics import SearchMetrics
-from sudoku.solvers import solve, solve_mrv, solve_backtracking, solve_hidden_single
+from sudoku.solvers import solve, solve_backtracking
 from sudoku.puzzle_library import PuzzleLibrary, Puzzle
-from sudoku.metrics.benchmark import run_benchmark, process_summary_statistics, save_benchmark_data
+from sudoku.metrics.benchmark import run_benchmark, process_summary_statistics, BenchmarkResult
 from sudoku.config import speed_selections, solver_options
 from sudoku.gui.results_view import ResultsView
 
@@ -42,6 +42,30 @@ class SudokuApp:
         self.playback_state = "Unrecorded"
         self.step_id = None
 
+    def select_data_report(self):
+        """
+        function called upon pressing
+        'View Report' in the main UI.
+
+        pulls up a side window showing
+        all possible batch results that
+        can be reviewed.
+
+        user simply has to make a selection
+        and press "OK"; press "Cancel" to
+        close the window.
+        """
+
+        results_folder = Path("./data/results")
+        data_files = results_folder.glob("batch_*.txt")
+
+        data_filenames = []
+        index_lookup = {}
+
+        for result_file in data_files:
+            pass
+
+
     def view_recorded_benchmark_data(self,filepath: Path):
         """
         loads a benchmark result file into a 
@@ -51,10 +75,21 @@ class SudokuApp:
         presuming a valid filepath, as it will be
         globbed from the ./results data folder.
         """
+        summary_dict = {}
+        data_results = []
 
         with open(filepath,mode='r',encoding='utf-8') as file:
-            # skipping lines until we reach our first '---*'
-            line = file.readline()
+
+            # first line contains batch number
+            batch_args = file.readline().split(' ')
+            batch_number = int(batch_args[2])
+
+            # skip puzzle count line
+            file.readline()
+
+            # rep count line
+            rep_args = file.readline().split('=')
+            rep_count = int(rep_args[1])
             
             # using '--- --- --- --- ---' as a file delimiter.
             while not line.startswith('---') and line != "":
@@ -63,7 +98,6 @@ class SudokuApp:
             # skip two more lines, then we're at our summary data.
             file.readline()
             file.readline()
-            summary_dict = {}
 
             while True:
                 summary_args = file.readline().split('\t\t')
@@ -71,7 +105,6 @@ class SudokuApp:
                     break
             
                 solver_name = summary_args[0]
-                summary_dict[solver_name] = []
 
                 mean_elapsed_ms = summary_args[1]
                 median_elapsed_ms = summary_args[2].rstrip('\n')
@@ -80,9 +113,43 @@ class SudokuApp:
                 summary_dict[solver_name] = (float(mean_elapsed_ms) / 1000,
                                              float(median_elapsed_ms) / 1000)
 
-            # TODO finish parser (read 'raw data' portion)
+            # skip 3 lines to get to the beginning of raw data
+            file.readline()
+            file.readline()
+            file.readline()
+            
+            while True:
+                args = file.readline().split(',')
+                if len(args) <= 1:
+                    break
 
+                solver_name = args[0]
+                puzzle_name = args[1]
+                is_valid = args[2]
+                elapsed_ms = args[3]
+                placements = args[4]
+                backtracks = args[5]
+                max_depth = args[6]
+                solver_calls = args[7]
+                result = BenchmarkResult(solver_name=solver_name,
+                                         data=SearchMetrics(puzzle_name=puzzle_name,
+                                                            elapsed_sec=float(elapsed_ms)/1000,
+                                                            placements=int(placements),
+                                                            backtracks=int(backtracks),
+                                                            max_depth=int(max_depth),
+                                                            solver_calls=int(solver_calls)),
+                                         is_valid=bool(is_valid))
+                data_results.append(result)
+
+        view = ResultsView(self.root, 
+                           results=data_results,
+                           summary_stats=summary_dict,
+                           benchmark_progress_label=self.benchmark_puz_label,
+                           batch_index=batch_number,
+                           rep_count=rep_count,
+                           saved_data=True)
     
+
     def display_benchmark_stats(self):
         """
         called to display benchmark data
@@ -406,11 +473,15 @@ class SudokuApp:
         self.benchmark_progress_frame = Frame(self.root)
         self.benchmark_progress_frame.pack()
         dropdowns = Frame(self.benchmark_progress_frame)
-        dropdowns.grid(pady=10,column=0,row=0)
+        dropdowns.grid(pady=10,column=1,row=0)
 
         self.benchmark_puz_label = Label(self.benchmark_progress_frame, 
                                          text='BENCHMARK STATUS -- Standby')
-        self.benchmark_puz_label.grid(column=0,row=1,pady=10)
+        self.benchmark_puz_label.grid(column=1,row=1,pady=10)
+
+        self.view_report_btn = Button(self.benchmark_progress_frame,
+                                      text='View Report',
+                                      command=self.select_data_report)
 
         puzzle_names = []
         easy_count = 0

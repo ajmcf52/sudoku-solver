@@ -28,7 +28,8 @@ class ResultsView:
                  summary_stats: dict,
                  benchmark_progress_label: Label,
                  batch_index:int,
-                 rep_count:int = 1):
+                 rep_count:int = 1,
+                 saved_data:bool = False):
         self.data = results
         self.summary_stats = summary_stats
         self.row_count = len(self.data)
@@ -40,6 +41,7 @@ class ResultsView:
         self.benchmark_puz_label = benchmark_progress_label
         self.batch_index = batch_index
         self.rep_count = rep_count
+        self.saved_data = saved_data
 
         self.draw_window()
         self.draw_table()
@@ -122,10 +124,12 @@ class ResultsView:
         self.summary_panel = Frame(self.summary_panel_master)
         self.summary_panel.grid(pady=15,column=1,row=0)
 
-        self.save_report_btn = Button(self.summary_panel_master,
-                                      text='Save Report',
-                                      command=self.prompt_save_data)
-        self.save_report_btn.grid(pady=15,padx=15,column=0,row=0)
+        # if we're not pulling saved data, offer option to save it.
+        if not self.saved_data:
+            self.save_report_btn = Button(self.summary_panel_master,
+                                          text='Save Report',
+                                          command=self.prompt_save_data)
+            self.save_report_btn.grid(pady=15,padx=15,column=0,row=0)
 
         average_title_label = Label(self.summary_panel,text='Average (ms)')
         average_title_label.grid(column=0,row=1,padx=15,pady=10)
