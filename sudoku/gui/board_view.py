@@ -42,6 +42,14 @@ class SudokuApp:
         self.playback_state = "Unrecorded"
         self.step_id = None
 
+    def cancel_view_report(self):
+        """
+        destroy 'view report' window.
+        """
+
+        self.data_select.destroy()
+        self.view_report_btn.config(state='active')
+
     def select_data_report(self):
         """
         function called upon pressing
@@ -59,12 +67,55 @@ class SudokuApp:
         results_folder = Path("./data/results")
         data_files = results_folder.glob("batch_*.txt")
 
-        data_filenames = []
-        index_lookup = {}
+        self.report_lookup = {}
+        index = 0
+
+        self.data_select = Toplevel(self.root)
+        self.data_select.minsize(width=220,height=220)
+        self.data_select.title('Select Report to View')
+        self.data_select.protocol("WM_DELETE_WINDOW", self.cancel_view_report)
+
+        button_panel = Frame(self.data_select)
+        button_panel.pack(anchor='s',side='bottom', fill='x')
+
+        cancel_button = Button(button_panel,text='Cancel',command=self.cancel_view_report)
+        cancel_button.pack(padx=10,pady=10,side='right')
+        
+        ok_button = Button(button_panel, text='OK', command=self.start_view_report)
+        ok_button.pack(padx=10,pady=10,side='right')
+
+        self.report_list = Listbox(self.data_select, selectmode='single')
+        self.report_list.pack(side='left',fill='both',expand=True)
+
+        scrollbar = Scrollbar(self.data_select)
+        scrollbar.pack(side='right',fill=Y)
 
         for result_file in data_files:
-            pass
+            self.report_lookup[index] = result_file
+            index += 1
+            self.report_list.insert(END,result_file)
 
+        self.report_list.select_set(0)
+
+        self.report_list.config(yscrollcommand=scrollbar.set, 
+                                height=self.report_list.size(),
+                                width=55)
+        scrollbar.config(command=self.report_list.yview)
+
+        self.view_report_btn.config(state='disabled')
+
+    def start_view_report(self):
+        """
+        gets the selected filepath
+        from the user and passes it
+        into the next function.
+        """
+        selected_report_id = self.report_list.curselection()[0]
+        self.selected_report_path = self.report_lookup[selected_report_id]
+        self.view_report_btn.config(state='disabled')
+
+        self.data_select.destroy()
+        self.view_recorded_benchmark_data(self.selected_report_path)
 
     def view_recorded_benchmark_data(self,filepath: Path):
         """
@@ -85,7 +136,7 @@ class SudokuApp:
             batch_number = int(batch_args[2])
 
             # skip puzzle count line
-            file.readline()
+            line = file.readline()
 
             # rep count line
             rep_args = file.readline().split('=')
@@ -140,6 +191,11 @@ class SudokuApp:
                                                             solver_calls=int(solver_calls)),
                                          is_valid=bool(is_valid))
                 data_results.append(result)
+        view = None
+
+        def on_close():
+            self.view_report_btn.config(state='active')
+            view.destroy()
 
         view = ResultsView(self.root, 
                            results=data_results,
@@ -147,7 +203,10 @@ class SudokuApp:
                            benchmark_progress_label=self.benchmark_puz_label,
                            batch_index=batch_number,
                            rep_count=rep_count,
-                           saved_data=True)
+                           saved_data=True,
+                           on_close=on_close)
+
+        
     
 
     def display_benchmark_stats(self):
@@ -482,6 +541,7 @@ class SudokuApp:
         self.view_report_btn = Button(self.benchmark_progress_frame,
                                       text='View Report',
                                       command=self.select_data_report)
+        self.view_report_btn.grid(column=0,row=1,pady=10,padx=20)
 
         puzzle_names = []
         easy_count = 0

@@ -29,7 +29,8 @@ class ResultsView:
                  benchmark_progress_label: Label,
                  batch_index:int,
                  rep_count:int = 1,
-                 saved_data:bool = False):
+                 saved_data:bool = False,
+                 on_close=None):
         self.data = results
         self.summary_stats = summary_stats
         self.row_count = len(self.data)
@@ -42,10 +43,14 @@ class ResultsView:
         self.batch_index = batch_index
         self.rep_count = rep_count
         self.saved_data = saved_data
-
+        self.on_close = on_close
+        
         self.draw_window()
         self.draw_table()
         self.draw_benchmark_summary()
+
+    def destroy(self):
+        self.top_level.destroy()
 
     def draw_window(self):
         """
@@ -54,6 +59,9 @@ class ResultsView:
 
         self.top_level = Toplevel(self.root)
         self.top_level.title('Benchmark Results')
+
+        if self.on_close is not None:
+            self.top_level.protocol("WM_DELETE_WINDOW",self.on_close)
 
     def setup_headings(self):
         """
